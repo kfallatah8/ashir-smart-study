@@ -7,10 +7,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FileText, Plus, Search, Filter, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast";
 
 const Documents = () => {
   const { language, t } = useLanguage();
+  const { toast } = useToast();
   const isRTL = language === 'ar';
+  
+  const handleUpload = () => {
+    toast({
+      title: language === 'en' ? "Upload Document" : "تحميل مستند",
+      description: language === 'en' ? "Document upload feature coming soon!" : "ميزة تحميل المستندات قريبًا!",
+    });
+  };
+
+  const handleDocumentClick = (docTitle: string) => {
+    toast({
+      title: language === 'en' ? "Opening Document" : "فتح المستند",
+      description: language === 'en' ? `Opening ${docTitle}` : `جاري فتح ${docTitle}`,
+    });
+  };
   
   // Sample document data
   const documents = [
@@ -52,12 +68,12 @@ const Documents = () => {
           isRTL && "flex-row-reverse"
         )}>
           <h1 className="text-2xl font-bold">{t('My Documents')}</h1>
-          <Button className={cn(
-            "flex items-center",
-            isRTL && "flex-row-reverse"
-          )}>
+          <Button 
+            className={cn("flex items-center", isRTL && "flex-row-reverse")}
+            onClick={handleUpload}
+          >
             <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-            <span>{language === 'en' ? 'Upload Document' : 'تحميل مستند'}</span>
+            <span>{t('Upload Document')}</span>
           </Button>
         </div>
 
@@ -77,15 +93,19 @@ const Documents = () => {
                     "pl-10 pr-4",
                     isRTL && "pl-4 pr-10"
                   )}
-                  placeholder={language === 'en' ? "Search documents..." : "البحث عن المستندات..."} 
+                  placeholder={t('Search documents...')} 
                 />
               </div>
-              <Button variant="outline" className={cn(
-                "flex items-center",
-                isRTL && "flex-row-reverse"
-              )}>
+              <Button 
+                variant="outline" 
+                className={cn("flex items-center", isRTL && "flex-row-reverse")}
+                onClick={() => toast({
+                  title: language === 'en' ? "Filter Documents" : "تصفية المستندات",
+                  description: language === 'en' ? "Filter functionality coming soon!" : "وظيفة التصفية قريبًا!"
+                })}
+              >
                 <Filter className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
-                <span>{language === 'en' ? 'Filter' : 'تصفية'}</span>
+                <span>{t('Filter')}</span>
               </Button>
             </div>
 
@@ -97,6 +117,7 @@ const Documents = () => {
                     "flex items-center border rounded-lg p-4 hover:bg-gray-50 cursor-pointer",
                     isRTL && "flex-row-reverse"
                   )}
+                  onClick={() => handleDocumentClick(doc.title)}
                 >
                   <div className={cn(
                     "bg-primary-100 p-3 rounded-lg",
@@ -108,7 +129,7 @@ const Documents = () => {
                   <div className={cn("flex-1", isRTL && "text-right")}>
                     <h3 className="font-medium">{doc.title}</h3>
                     <p className="text-sm text-gray-500">
-                      {language === 'en' ? `${doc.pages} pages` : `${doc.pages} صفحات`} • {doc.type}
+                      {`${doc.pages} ${t('pages')}`} • {doc.type}
                     </p>
                   </div>
                   

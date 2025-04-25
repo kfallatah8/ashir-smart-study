@@ -8,10 +8,21 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { Globe, Bell, Shield, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast";
 
 const Settings = () => {
   const { language, setLanguage, t } = useLanguage();
+  const { toast } = useToast();
   const isRTL = language === 'ar';
+
+  const handleLanguageChange = (value: 'en' | 'ar') => {
+    setLanguage(value);
+    toast({
+      title: value === 'en' ? 'Language Changed' : 'تم تغيير اللغة',
+      description: value === 'en' ? 'English language selected' : 'تم اختيار اللغة العربية',
+    });
+  };
 
   return (
     <MainLayout>
@@ -65,19 +76,17 @@ const Settings = () => {
                   {t('Language & Region')}
                 </CardTitle>
                 <CardDescription className={isRTL ? "text-right" : ""}>
-                  {language === 'en' 
-                    ? 'Choose your preferred language and region settings.'
-                    : 'اختر لغتك المفضلة وإعدادات المنطقة.'}
+                  {t('Choose your preferred language and region settings.')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className={isRTL ? "text-right" : ""}>
                   <Label htmlFor="language" className="block mb-2">
-                    {language === 'en' ? 'Application Language' : 'لغة التطبيق'}
+                    {t('Application Language')}
                   </Label>
                   <RadioGroup 
-                    defaultValue={language}
-                    onValueChange={(value) => setLanguage(value as 'en' | 'ar')}
+                    value={language}
+                    onValueChange={(value) => handleLanguageChange(value as 'en' | 'ar')}
                     className="flex flex-col space-y-1"
                   >
                     <div className={cn(
@@ -101,13 +110,11 @@ const Settings = () => {
                 
                 <div className={isRTL ? "text-right" : ""}>
                   <Label className="block mb-4">
-                    {language === 'en' ? 'Regional Settings' : 'إعدادات إقليمية'}
+                    {t('Regional Settings')}
                   </Label>
                   {/* Example regional settings would go here */}
                   <p className="text-sm text-gray-500">
-                    {language === 'en' 
-                      ? 'Additional regional settings will be available in a future update.' 
-                      : 'ستتوفر إعدادات إقليمية إضافية في تحديث مستقبلي.'}
+                    {t('Additional regional settings will be available in a future update.')}
                   </p>
                 </div>
               </CardContent>
@@ -120,6 +127,3 @@ const Settings = () => {
 };
 
 export default Settings;
-
-// Import cn from utils
-import { cn } from '@/lib/utils';

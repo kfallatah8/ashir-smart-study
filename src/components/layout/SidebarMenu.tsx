@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/hooks/use-language';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { useToast } from "@/hooks/use-toast";
 
 interface SidebarMenuProps {
   open: boolean;
@@ -25,6 +27,7 @@ export default function SidebarMenu({ open, toggleSidebar }: SidebarMenuProps) {
   const currentPath = useLocation().pathname;
   const isMobile = useIsMobile();
   const { language, t } = useLanguage();
+  const { toast } = useToast();
   const isRTL = language === 'ar';
 
   const navigationItems = [
@@ -35,6 +38,13 @@ export default function SidebarMenu({ open, toggleSidebar }: SidebarMenuProps) {
     { name: t('Leaderboards'), href: '/leaderboards', icon: Users },
     { name: t('Settings'), href: '/settings', icon: Settings },
   ];
+
+  const handleViewTutorials = () => {
+    toast({
+      title: language === 'en' ? "Tutorials" : "البرامج التعليمية",
+      description: language === 'en' ? "Tutorials coming soon!" : "البرامج التعليمية قريبًا!",
+    });
+  };
 
   const sidebarContent = (
     <div className={cn(
@@ -99,9 +109,13 @@ export default function SidebarMenu({ open, toggleSidebar }: SidebarMenuProps) {
           <div className="bg-muted rounded-lg p-3 text-xs text-gray-600">
             <p className="font-semibold">{t('Need help?')}</p>
             <p className="mt-1">{t('Check our tutorials or contact support.')}</p>
-            <button className="mt-2 text-primary hover:text-primary-600 text-xs font-medium">
-              {t('View tutorials')} →
-            </button>
+            <Button 
+              variant="link" 
+              className="mt-2 p-0 h-auto text-primary hover:text-primary-600 text-xs font-medium"
+              onClick={handleViewTutorials}
+            >
+              {t('View tutorials')} {isRTL ? '←' : '→'}
+            </Button>
           </div>
         </div>
       )}

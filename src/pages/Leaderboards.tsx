@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Award, Trophy, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast";
 
 const Leaderboards = () => {
   const { language, t } = useLanguage();
+  const { toast } = useToast();
   const isRTL = language === 'ar';
   const [timeFrame, setTimeFrame] = useState<'week' | 'month' | 'semester'>('week');
   
@@ -28,19 +30,14 @@ const Leaderboards = () => {
   ];
 
   const getTimeFrameLabel = () => {
-    if (language === 'en') {
-      switch (timeFrame) {
-        case 'week': return 'This Week';
-        case 'month': return 'This Month';
-        case 'semester': return 'This Semester';
-      }
-    } else {
-      switch (timeFrame) {
-        case 'week': return 'هذا الأسبوع';
-        case 'month': return 'هذا الشهر';
-        case 'semester': return 'هذا الفصل الدراسي';
-      }
-    }
+    return t(`This ${timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)}`);
+  };
+
+  const handleConnectFriends = () => {
+    toast({
+      title: language === 'en' ? "Connect with Friends" : "تواصل مع الأصدقاء",
+      description: language === 'en' ? "Friend connection feature coming soon!" : "ميزة التواصل مع الأصدقاء قريبًا!",
+    });
   };
 
   return (
@@ -58,13 +55,13 @@ const Leaderboards = () => {
           )}>
             <TabsList>
               <TabsTrigger value="university" className={isRTL ? "order-3" : ""}>
-                {language === 'en' ? 'University' : 'الجامعة'}
+                {t('University')}
               </TabsTrigger>
               <TabsTrigger value="major" className={isRTL ? "order-2" : ""}>
-                {language === 'en' ? 'Major' : 'التخصص'}
+                {t('Major')}
               </TabsTrigger>
               <TabsTrigger value="friends" className={isRTL ? "order-1" : ""}>
-                {language === 'en' ? 'Friends' : 'الأصدقاء'}
+                {t('Friends')}
               </TabsTrigger>
             </TabsList>
             
@@ -74,21 +71,21 @@ const Leaderboards = () => {
                 size="sm"
                 onClick={() => setTimeFrame('week')}
               >
-                {language === 'en' ? 'Week' : 'أسبوع'}
+                {t('Week')}
               </Button>
               <Button 
                 variant={timeFrame === 'month' ? "secondary" : "ghost"} 
                 size="sm"
                 onClick={() => setTimeFrame('month')}
               >
-                {language === 'en' ? 'Month' : 'شهر'}
+                {t('Month')}
               </Button>
               <Button 
                 variant={timeFrame === 'semester' ? "secondary" : "ghost"} 
                 size="sm"
                 onClick={() => setTimeFrame('semester')}
               >
-                {language === 'en' ? 'Semester' : 'فصل دراسي'}
+                {t('Semester')}
               </Button>
             </div>
           </div>
@@ -101,10 +98,10 @@ const Leaderboards = () => {
                   isRTL && "flex-row-reverse justify-end"
                 )}>
                   <Trophy className={cn(
-                    "h-5 w-5 text-highlight",
+                    "h-5 w-5 text-amber-500",
                     isRTL ? "ml-2" : "mr-2"
                   )} />
-                  <span>{language === 'en' ? 'Top Students' : 'أفضل الطلاب'} - {getTimeFrameLabel()}</span>
+                  <span>{t('Top Students')} - {getTimeFrameLabel()}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -149,7 +146,7 @@ const Leaderboards = () => {
                       )}>
                         <span className="font-bold text-primary">{user.points}</span>
                         <span className="text-xs text-gray-500 ml-1">
-                          {language === 'en' ? 'pts' : 'نقاط'}
+                          {t('pts')}
                         </span>
                       </div>
                     </div>
@@ -163,15 +160,13 @@ const Leaderboards = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className={isRTL ? "text-right" : ""}>
-                  {language === 'en' ? 'Computer Science Major - Top Students' : 'تخصص علوم الحاسب - أفضل الطلاب'}
+                  {t('Computer Science Major - Top Students')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center py-10">
                 <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600">
-                  {language === 'en' 
-                    ? 'Coming soon! Major-specific leaderboards will be available in the next update.'
-                    : 'قريبًا! ستكون لوحات المتصدرين الخاصة بالتخصص متاحة في التحديث القادم.'}
+                  {t('Coming soon! Major-specific leaderboards will be available in the next update.')}
                 </p>
               </CardContent>
             </Card>
@@ -181,18 +176,16 @@ const Leaderboards = () => {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className={isRTL ? "text-right" : ""}>
-                  {language === 'en' ? 'Friends Circle' : 'دائرة الأصدقاء'}
+                  {t('Friends Circle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center py-10">
                 <Users className="h-12 w-12 mx-auto text-gray-400 mb-4" />
                 <p className="text-gray-600">
-                  {language === 'en'
-                    ? 'Add friends to see how you rank among them!'
-                    : 'أضف أصدقاء لترى كيف تصنف بينهم!'}
+                  {t('Add friends to see how you rank among them!')}
                 </p>
-                <Button className="mt-4">
-                  {language === 'en' ? 'Connect with Friends' : 'تواصل مع الأصدقاء'}
+                <Button className="mt-4" onClick={handleConnectFriends}>
+                  {t('Connect with Friends')}
                 </Button>
               </CardContent>
             </Card>
