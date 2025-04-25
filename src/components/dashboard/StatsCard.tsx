@@ -24,7 +24,7 @@ export default function StatsCard({
   const { t } = useLanguage();
   
   return (
-    <Card className="h-full">
+    <Card className="h-full transform-3d hover:element-3d">
       <CardContent className="p-6">
         <div className="flex justify-between items-start">
           <div>
@@ -37,7 +37,7 @@ export default function StatsCard({
             <p className="text-sm text-gray-500 mt-1">{t(description)}</p>
           </div>
           {icon && (
-            <div className={`w-10 h-10 rounded-full ${color} bg-opacity-20 flex items-center justify-center`}>
+            <div className={`w-10 h-10 rounded-full ${color} bg-opacity-20 flex items-center justify-center transform-3d element-3d`}>
               {icon}
             </div>
           )}

@@ -2,12 +2,16 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Check } from 'lucide-react';
+import { Upload, FileText, Check, CircleCheck, File3d } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
+import { useToast } from "@/hooks/use-toast";
 
 export default function UploadZone() {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const { t } = useLanguage();
+  const { toast } = useToast();
   
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -22,27 +26,37 @@ export default function UploadZone() {
     e.preventDefault();
     setIsDragging(false);
     
-    // Simulate file upload
+    // Handle file upload
     const files = e.dataTransfer.files;
     if (files.length) {
-      simulateUpload(files);
+      handleFileUpload(files);
     }
   };
   
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length) {
-      simulateUpload(files);
+      handleFileUpload(files);
     }
   };
   
-  const simulateUpload = (files: FileList) => {
+  const handleFileUpload = (files: FileList) => {
     setIsUploading(true);
+    
+    // Display file names
+    const fileNames = Array.from(files).map(file => file.name).join(', ');
     
     // Simulate an upload process
     setTimeout(() => {
       setIsUploading(false);
       setUploadComplete(true);
+      
+      // Show upload success toast
+      toast({
+        title: t('Upload Complete'),
+        description: t('Your files have been successfully uploaded'),
+        variant: 'success',
+      });
       
       // Reset after a few seconds
       setTimeout(() => {
@@ -57,16 +71,16 @@ export default function UploadZone() {
         {isUploading ? (
           <div className="py-8 flex flex-col items-center">
             <div className="w-16 h-16 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
-            <p className="mt-4 text-gray-600 font-medium">Uploading document...</p>
-            <p className="text-sm text-gray-500 mt-2">This will just take a moment</p>
+            <p className="mt-4 text-gray-600 font-medium">{t('Uploading document...')}</p>
+            <p className="text-sm text-gray-500 mt-2">{t('This will just take a moment')}</p>
           </div>
         ) : uploadComplete ? (
           <div className="py-8 flex flex-col items-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-              <Check className="w-8 h-8" />
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 animate-fade-in">
+              <CircleCheck className="w-8 h-8" />
             </div>
-            <p className="mt-4 text-gray-600 font-medium">Upload Complete!</p>
-            <p className="text-sm text-gray-500 mt-2">Your document is ready for processing</p>
+            <p className="mt-4 text-gray-600 font-medium">{t('Upload Complete!')}</p>
+            <p className="text-sm text-gray-500 mt-2">{t('Your document is ready for processing')}</p>
           </div>
         ) : (
           <div
@@ -75,16 +89,16 @@ export default function UploadZone() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary">
-              <Upload className="h-8 w-8" />
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary transform-3d element-3d">
+              <File3d className="h-8 w-8" />
             </div>
             <div className="mt-4">
-              <h3 className="text-lg font-medium text-gray-700">Upload your documents</h3>
+              <h3 className="text-lg font-medium text-gray-700">{t('Upload your documents')}</h3>
               <p className="mt-1 text-sm text-gray-500">
-                Drag and drop your files here, or click to browse
+                {t('Drag and drop your files here, or click to browse')}
               </p>
               <p className="mt-1 text-xs text-gray-500">
-                Supports PDFs, Word documents, images, and handwritten notes
+                {t('Supports PDFs, Word documents, images, and handwritten notes')}
               </p>
             </div>
             <div className="mt-4">
@@ -94,7 +108,7 @@ export default function UploadZone() {
                   className="mx-auto border-primary text-primary hover:bg-primary hover:text-white"
                 >
                   <FileText className="mr-2 h-4 w-4" />
-                  Browse Files
+                  {t('Browse Files')}
                 </Button>
                 <input
                   id="file-upload"

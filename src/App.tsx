@@ -11,6 +11,7 @@ import Documents from "./pages/Documents";
 import Achievements from "./pages/Achievements";
 import Leaderboards from "./pages/Leaderboards";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 // Create a new query client
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/achievements" element={<Achievements />} />
             <Route path="/leaderboards" element={<Leaderboards />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

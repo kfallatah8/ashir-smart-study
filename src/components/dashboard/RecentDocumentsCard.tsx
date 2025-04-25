@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { File3d, FileText, Image } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
 const recentDocuments = [
@@ -9,21 +10,24 @@ const recentDocuments = [
     title: 'Organic Chemistry Notes',
     type: 'PDF',
     date: '3 hours ago',
-    progress: 75
+    progress: 75,
+    icon: <FileText className="h-4 w-4 text-blue-700" />
   },
   {
     id: 2,
     title: 'Calculus II - Week 5',
     type: 'Word',
     date: 'Yesterday',
-    progress: 40
+    progress: 40,
+    icon: <File3d className="h-4 w-4 text-blue-700" />
   },
   {
     id: 3,
     title: 'Computer Science Fundamentals',
     type: 'Image',
     date: '2 days ago',
-    progress: 90
+    progress: 90,
+    icon: <Image className="h-4 w-4 text-blue-700" />
   }
 ];
 
@@ -31,7 +35,7 @@ export default function RecentDocumentsCard() {
   const { t } = useLanguage();
   
   return (
-    <Card className="h-full">
+    <Card className="h-full transform-3d hover:element-3d">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-medium">{t('Recent Documents')}</CardTitle>
       </CardHeader>
@@ -40,7 +44,7 @@ export default function RecentDocumentsCard() {
           {recentDocuments.map((doc) => (
             <div key={doc.id} className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="w-10 h-10 rounded bg-blue-100 text-blue-700 flex items-center justify-center font-medium">
-                {t(doc.type)}
+                {doc.icon}
               </div>
               <div className="ml-3 flex-1">
                 <h4 className="text-sm font-medium">{t(doc.title)}</h4>

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import Header from './Header';
 import SidebarMenu from './SidebarMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,7 +9,7 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const isMobile = useIsMobile();
 
   const toggleSidebar = () => {
@@ -22,7 +22,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
       <div className="flex-1 flex flex-col">
         <Header toggleSidebar={toggleSidebar} />
         <main className="flex-1 p-6 overflow-auto">
-          {children}
+          {/* 3D Background Elements */}
+          <div className="fixed inset-0 z-0 pointer-events-none">
+            {/* Top right decorative element */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary-100/20 to-primary-300/20 rounded-full blur-3xl transform translate-x-1/3 -translate-y-1/3"></div>
+            
+            {/* Bottom left decorative element */}
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-blue-100/20 to-purple-300/20 rounded-full blur-3xl transform -translate-x-1/3 translate-y-1/3"></div>
+          </div>
+          
+          {/* Main content with z-index to appear above the decorative background */}
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
       </div>
     </div>
