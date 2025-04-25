@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Bell, User } from 'lucide-react';
+import { Bell, Menu, User, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useLanguage } from '@/hooks/use-language';
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +13,50 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
-export default function Header() {
+interface HeaderProps {
+  toggleSidebar: () => void;
+}
+
+export default function Header({ toggleSidebar }: HeaderProps) {
+  const { language, setLanguage, t } = useLanguage();
+  const isRTL = language === 'ar';
+
   return (
-    <header className="bg-white shadow-sm py-2 px-4 flex items-center justify-between">
+    <header className={cn(
+      "bg-white shadow-sm py-2 px-4 flex items-center justify-between",
+      isRTL && "flex-row-reverse"
+    )}>
       <div className="flex items-center">
-        <h1 className="text-lg font-bold text-primary mr-2">SmartStudy</h1>
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="mr-2">
+          <Menu className="h-5 w-5 text-gray-600" />
+        </Button>
+        <h1 className={cn(
+          "text-lg font-bold text-primary",
+          isRTL ? "mr-2" : "mr-2"
+        )}>SmartStudy</h1>
         <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">Beta</span>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className={cn(
+        "flex items-center space-x-4",
+        isRTL && "flex-row-reverse space-x-reverse"
+      )}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Globe className="h-5 w-5 text-gray-600" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setLanguage('en')} className={language === 'en' ? 'bg-primary-100' : ''}>
+              English
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setLanguage('ar')} className={language === 'ar' ? 'bg-primary-100' : ''}>
+              العربية
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5 text-gray-600" />
           <span className="absolute top-0 right-0 h-2 w-2 bg-highlight rounded-full"></span>
@@ -38,7 +74,7 @@ export default function Header() {
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">Ahmed Mohammed</p>
+                <p className="text-sm font-medium leading-none">{t('Ahmed Mohammed')}</p>
                 <p className="text-xs leading-none text-muted-foreground">
                   ahmed.m@university.sa
                 </p>
@@ -46,17 +82,17 @@ export default function Header() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              Profile
+              {t('Profile')}
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Settings
+              {t('Settings')}
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Help & Support
+              {t('Help & Support')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              Log out
+              {t('Log out')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -64,3 +100,6 @@ export default function Header() {
     </header>
   );
 }
+
+// Import cn from utils
+import { cn } from '@/lib/utils';
