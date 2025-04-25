@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useLanguage } from '@/hooks/use-language';
 
 const recentDocuments = [
   {
@@ -27,21 +28,23 @@ const recentDocuments = [
 ];
 
 export default function RecentDocumentsCard() {
+  const { t } = useLanguage();
+  
   return (
     <Card className="h-full">
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-medium">Recent Documents</CardTitle>
+        <CardTitle className="text-lg font-medium">{t('Recent Documents')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {recentDocuments.map((doc) => (
             <div key={doc.id} className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="w-10 h-10 rounded bg-blue-100 text-blue-700 flex items-center justify-center font-medium">
-                {doc.type}
+                {t(doc.type)}
               </div>
               <div className="ml-3 flex-1">
-                <h4 className="text-sm font-medium">{doc.title}</h4>
-                <p className="text-xs text-gray-500">{doc.date}</p>
+                <h4 className="text-sm font-medium">{t(doc.title)}</h4>
+                <p className="text-xs text-gray-500">{t(doc.date)}</p>
               </div>
               <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div 
@@ -54,7 +57,7 @@ export default function RecentDocumentsCard() {
         </div>
         
         <button className="mt-4 text-sm text-primary hover:text-primary-600 font-medium w-full text-center">
-          View all documents →
+          {t('View all documents')} →
         </button>
       </CardContent>
     </Card>

@@ -7,8 +7,11 @@ import RecentDocumentsCard from '@/components/dashboard/RecentDocumentsCard';
 import StudyToolsCard from '@/components/dashboard/StudyToolsCard';
 import UploadZone from '@/components/upload/UploadZone';
 import { Award, Check, BookOpen } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
 
 const Index = () => {
+  const { t } = useLanguage();
+  
   return (
     <MainLayout>
       <div className="animate-fade-in">
@@ -49,7 +52,7 @@ const Index = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Upload New Document</h2>
+          <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
           <UploadZone />
         </div>
       </div>

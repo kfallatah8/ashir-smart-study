@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define available languages
@@ -100,6 +99,21 @@ const translations = {
     'Please select a document from your library or upload a new one to create a video explanation': 'Please select a document from your library or upload a new one to create a video explanation',
     'You have no saved videos yet': 'You have no saved videos yet',
     'Tool not found': 'Tool not found',
+    'Progress': 'Progress',
+    'Days': 'Days',
+    'Recent Documents': 'Recent Documents',
+    'View all documents': 'View all documents',
+    'Organic Chemistry Notes': 'Organic Chemistry Notes',
+    'Calculus II - Week 5': 'Calculus II - Week 5',
+    'Computer Science Fundamentals': 'Computer Science Fundamentals',
+    'PDF': 'PDF',
+    'Word': 'Word',
+    'Image': 'Image',
+    '3 hours ago': '3 hours ago',
+    'Yesterday': 'Yesterday',
+    '2 days ago': '2 days ago',
+    'Upload Document': 'Upload Document',
+    'Study Now': 'Study Now',
   },
   ar: {
     'Dashboard': 'لوحة القيادة',
@@ -195,6 +209,21 @@ const translations = {
     'Please select a document from your library or upload a new one to create a video explanation': 'الرجاء تحديد مستند من مكتبتك أو تحميل مستند جديد لإنشاء شرح فيديو',
     'You have no saved videos yet': 'ليس لديك مقاطع فيديو محفوظة بعد',
     'Tool not found': 'الأداة غير موجودة',
+    'Progress': 'التقدم',
+    'Days': 'أيام',
+    'Recent Documents': 'المستندات الأخيرة',
+    'View all documents': 'عرض كل المستندات',
+    'Organic Chemistry Notes': 'ملاحظات الكيمياء العضوية',
+    'Calculus II - Week 5': 'حساب التفاضل والتكامل II - الأسبوع 5',
+    'Computer Science Fundamentals': 'أساسيات علوم الكمبيوتر',
+    'PDF': 'PDF',
+    'Word': 'Word',
+    'Image': 'صورة',
+    '3 hours ago': 'منذ 3 ساعات',
+    'Yesterday': 'أمس',
+    '2 days ago': 'منذ يومين',
+    'Upload Document': 'تحميل مستند',
+    'Study Now': 'ابدأ الدراسة الآن',
   }
 };
 
