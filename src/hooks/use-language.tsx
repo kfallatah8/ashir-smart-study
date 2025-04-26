@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'en' | 'ar';
@@ -57,16 +58,13 @@ const translations: Translations = {
     '3rd Year Student': '3rd Year Student',
     'Edit Profile': 'Edit Profile',
     'Learning Stats': 'Learning Stats',
-    'Study Hours': 'Study Hours',
     'Documents Processed': 'Documents Processed',
     'Current Streak': 'Current Streak',
     'Days': 'Days',
-    'Achievements': 'Achievements',
     'Documents': 'Documents',
     'Courses': 'Courses',
     'Recent Achievements': 'Recent Achievements',
     'Learning Path': 'Learning Path',
-    'My Documents': 'My Documents',
     'Enrolled Courses': 'Enrolled Courses',
     'View': 'View',
     'Course': 'Course',
@@ -89,6 +87,23 @@ const translations: Translations = {
     'Your document is ready for processing': 'Your document is ready for processing',
     'Upload Complete': 'Upload Complete',
     'Your files have been successfully uploaded': 'Your files have been successfully uploaded',
+    
+    // Q&A
+    'AI Study Assistant': 'AI Study Assistant',
+    'Ask me any questions about your documents': 'Ask me any questions about your documents',
+    'Type your question...': 'Type your question...',
+    'Select a Document': 'Select a Document',
+    'Choose a document to ask questions about its content': 'Choose a document to ask questions about its content',
+    'Please select a document from your library or upload a new one to chat about': 'Please select a document from your library or upload a new one to chat about',
+    'You have no saved videos yet': 'You have no saved videos yet',
+    'You have no saved mind maps yet': 'You have no saved mind maps yet',
+    'You have no saved explanations yet': 'You have no saved explanations yet',
+    'You have no saved presentations yet': 'You have no saved presentations yet',
+    'You have no flashcard decks to practice yet': 'You have no flashcard decks to practice yet',
+    'You have no saved flashcard decks yet': 'You have no saved flashcard decks yet',
+    'Need help?': 'Need help?',
+    'Check our tutorials or contact support.': 'Check our tutorials or contact support.',
+    'View tutorials': 'View tutorials',
   },
   ar: {
     'Dashboard': 'لوحة التحكم',
@@ -105,7 +120,7 @@ const translations: Translations = {
     'View All': 'عرض الكل',
     'Uploaded Date': 'تاريخ الرفع',
     'File Size': 'حجم الملف',
-     'Study Tools': 'أدوات الدراسة',
+    'Study Tools': 'أدوات الدراسة',
     'AI Summarizer': 'ملخص الذكاء الاصطناعي',
     'Grammar Checker': 'مدقق القواعد',
     'Citation Generator': 'مولد الاقتباسات',
@@ -138,16 +153,13 @@ const translations: Translations = {
     '3rd Year Student': 'طالب السنة الثالثة',
     'Edit Profile': 'تعديل الملف الشخصي',
     'Learning Stats': 'إحصائيات التعلم',
-    'Study Hours': 'ساعات الدراسة',
     'Documents Processed': 'المستندات المعالجة',
     'Current Streak': 'التتابع الحالي',
     'Days': 'أيام',
-    'Achievements': 'الإنجازات',
     'Documents': 'المستندات',
     'Courses': 'الدورات',
     'Recent Achievements': 'الإنجازات الأخيرة',
     'Learning Path': 'مسار التعلم',
-    'My Documents': 'مستنداتي',
     'Enrolled Courses': 'الدورات المسجلة',
     'View': 'عرض',
     'Course': 'دورة',
@@ -156,6 +168,8 @@ const translations: Translations = {
     'Milestone': 'معلم',
     'Complete': 'إكمال',
     'study sessions': 'جلسات دراسية',
+    'Earned': 'اكتسب',
+    'days ago': 'أيام مضت',
     
     // Upload
     'Upload your documents': 'تحميل مستنداتك',
@@ -168,6 +182,23 @@ const translations: Translations = {
     'Your document is ready for processing': 'مستندك جاهز للمعالجة',
     'Upload Complete': 'اكتمل التحميل',
     'Your files have been successfully uploaded': 'تم تحميل ملفاتك بنجاح',
+    
+    // Q&A
+    'AI Study Assistant': 'مساعد الدراسة الذكي',
+    'Ask me any questions about your documents': 'اسألني أي سؤال عن مستنداتك',
+    'Type your question...': 'اكتب سؤالك...',
+    'Select a Document': 'اختر مستندًا',
+    'Choose a document to ask questions about its content': 'اختر مستندًا لطرح أسئلة حول محتواه',
+    'Please select a document from your library or upload a new one to chat about': 'يرجى اختيار مستند من مكتبتك أو تحميل مستند جديد للدردشة حوله',
+    'You have no saved videos yet': 'ليس لديك مقاطع فيديو محفوظة بعد',
+    'You have no saved mind maps yet': 'ليس لديك خرائط ذهنية محفوظة بعد',
+    'You have no saved explanations yet': 'ليس لديك شروحات محفوظة بعد',
+    'You have no saved presentations yet': 'ليس لديك عروض تقديمية محفوظة بعد',
+    'You have no flashcard decks to practice yet': 'ليس لديك مجموعات بطاقات للتدرب عليها بعد',
+    'You have no saved flashcard decks yet': 'ليس لديك مجموعات بطاقات محفوظة بعد',
+    'Need help?': 'بحاجة إلى مساعدة؟',
+    'Check our tutorials or contact support.': 'راجع دروسنا التعليمية أو اتصل بالدعم.',
+    'View tutorials': 'عرض الدروس التعليمية',
   }
 };
 
