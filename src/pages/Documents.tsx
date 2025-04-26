@@ -1,64 +1,75 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useLanguage } from '@/hooks/use-language';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Plus, Search, Filter, MoreHorizontal } from 'lucide-react';
+import { FileText, Plus, Search, Filter, Share2, MoreHorizontal } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
+import UploadZone from '@/components/upload/UploadZone';
+import DocumentProgress from '@/components/documents/DocumentProgress';
+import { shareDocument } from '@/lib/document-utils';
 
-const Documents = () => {
+export default function Documents() {
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const { language, t } = useLanguage();
   const { toast } = useToast();
   const isRTL = language === 'ar';
-  
-  const handleUpload = () => {
-    toast({
-      title: language === 'en' ? "Upload Document" : "تحميل مستند",
-      description: language === 'en' ? "Document upload feature coming soon!" : "ميزة تحميل المستندات قريبًا!",
-    });
+
+  useEffect(() => {
+    fetchDocuments();
+  }, [searchQuery]);
+
+  const fetchDocuments = async () => {
+    let query = supabase
+      .from('documents')
+      .select(`
+        *,
+        document_progress (
+          progress_percentage,
+          last_page_viewed
+        )
+      `);
+
+    if (searchQuery) {
+      query = query.textSearch('document_vector', searchQuery);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      toast({
+        title: t('Error'),
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      setDocuments(data || []);
+    }
   };
 
-  const handleDocumentClick = (docTitle: string) => {
-    toast({
-      title: language === 'en' ? "Opening Document" : "فتح المستند",
-      description: language === 'en' ? `Opening ${docTitle}` : `جاري فتح ${docTitle}`,
-    });
+  const handleShare = async (documentId: string) => {
+    try {
+      const email = prompt(t('Enter the email address to share with:'));
+      if (!email) return;
+
+      await shareDocument(documentId, email);
+      toast({
+        title: t('Success'),
+        description: t('Document shared successfully'),
+      });
+    } catch (error: any) {
+      toast({
+        title: t('Error'),
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   };
-  
-  // Sample document data
-  const documents = [
-    {
-      id: 1,
-      title: 'Calculus Notes',
-      pages: 14,
-      date: '2023-10-25',
-      type: 'PDF'
-    },
-    {
-      id: 2,
-      title: 'Physics Lab Report',
-      pages: 8,
-      date: '2023-10-20',
-      type: 'DOCX'
-    },
-    {
-      id: 3,
-      title: 'Computer Science Lecture',
-      pages: 22,
-      date: '2023-10-15',
-      type: 'PDF'
-    },
-    {
-      id: 4,
-      title: 'Arabic Literature Notes',
-      pages: 18,
-      date: '2023-10-10',
-      type: 'PDF'
-    },
-  ];
 
   return (
     <MainLayout>
@@ -70,7 +81,6 @@ const Documents = () => {
           <h1 className="text-2xl font-bold">{t('My Documents')}</h1>
           <Button 
             className={cn("flex items-center", isRTL && "flex-row-reverse")}
-            onClick={handleUpload}
           >
             <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
             <span>{t('Upload Document')}</span>
@@ -93,16 +103,14 @@ const Documents = () => {
                     "pl-10 pr-4",
                     isRTL && "pl-4 pr-10"
                   )}
-                  placeholder={t('Search documents...')} 
+                  placeholder={t('Search documents...')}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
               <Button 
                 variant="outline" 
                 className={cn("flex items-center", isRTL && "flex-row-reverse")}
-                onClick={() => toast({
-                  title: language === 'en' ? "Filter Documents" : "تصفية المستندات",
-                  description: language === 'en' ? "Filter functionality coming soon!" : "وظيفة التصفية قريبًا!"
-                })}
               >
                 <Filter className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
                 <span>{t('Filter')}</span>
@@ -113,11 +121,7 @@ const Documents = () => {
               {documents.map((doc) => (
                 <div 
                   key={doc.id}
-                  className={cn(
-                    "flex items-center border rounded-lg p-4 hover:bg-gray-50 cursor-pointer",
-                    isRTL && "flex-row-reverse"
-                  )}
-                  onClick={() => handleDocumentClick(doc.title)}
+                  className="flex items-center border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transform-3d hover:element-3d"
                 >
                   <div className={cn(
                     "bg-primary-100 p-3 rounded-lg",
@@ -126,32 +130,46 @@ const Documents = () => {
                     <FileText className="h-6 w-6 text-primary" />
                   </div>
                   
-                  <div className={cn("flex-1", isRTL && "text-right")}>
-                    <h3 className="font-medium">{doc.title}</h3>
-                    <p className="text-sm text-gray-500">
-                      {`${doc.pages} ${t('pages')}`} • {doc.type}
-                    </p>
-                  </div>
-                  
-                  <div className={cn(
-                    "text-right",
-                    isRTL && "text-left"
-                  )}>
-                    <p className="text-sm text-gray-500">
-                      {new Date(doc.date).toLocaleDateString(language === 'en' ? 'en-US' : 'ar-SA')}
-                    </p>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium">{doc.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleShare(doc.id)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {doc.document_progress?.[0] && (
+                      <DocumentProgress
+                        progress={doc.document_progress[0].progress_percentage}
+                        lastPage={doc.document_progress[0].last_page_viewed}
+                      />
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
+
+        <div className="mb-8">
+          <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
+          <UploadZone />
+        </div>
       </div>
     </MainLayout>
   );
-};
-
-export default Documents;
+}

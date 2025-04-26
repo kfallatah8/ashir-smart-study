@@ -9,9 +9,81 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      document_progress: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          id: string
+          last_page_viewed: number | null
+          last_viewed_at: string | null
+          progress_percentage: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          id?: string
+          last_page_viewed?: number | null
+          last_viewed_at?: string | null
+          progress_percentage?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          last_page_viewed?: number | null
+          last_viewed_at?: string | null
+          progress_percentage?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_progress_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_shares: {
+        Row: {
+          created_at: string | null
+          document_id: string
+          id: string
+          shared_by: string
+          shared_with: string
+        }
+        Insert: {
+          created_at?: string | null
+          document_id: string
+          id?: string
+          shared_by: string
+          shared_with: string
+        }
+        Update: {
+          created_at?: string | null
+          document_id?: string
+          id?: string
+          shared_by?: string
+          shared_with?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_shares_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           created_at: string
+          document_text: string | null
+          document_vector: unknown | null
           file_path: string
           file_size: number
           file_type: string
@@ -22,6 +94,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_text?: string | null
+          document_vector?: unknown | null
           file_path: string
           file_size: number
           file_type: string
@@ -32,12 +106,50 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_text?: string | null
+          document_vector?: unknown | null
           file_path?: string
           file_size?: number
           file_type?: string
           id?: string
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          related_entity_id: string | null
+          related_entity_type: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
@@ -69,6 +181,65 @@ export type Database = {
           major?: string | null
           updated_at?: string | null
           year?: string | null
+        }
+        Relationships: []
+      }
+      study_group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "study_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_groups: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
