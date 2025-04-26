@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileText, Check, CircleCheck, File3d } from 'lucide-react';
+import { Upload, FileText, Check, CircleCheck, File } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,7 +25,6 @@ export default function UploadZone() {
     e.preventDefault();
     setIsDragging(false);
     
-    // Handle file upload
     const files = e.dataTransfer.files;
     if (files.length) {
       handleFileUpload(files);
@@ -43,22 +41,18 @@ export default function UploadZone() {
   const handleFileUpload = (files: FileList) => {
     setIsUploading(true);
     
-    // Display file names
     const fileNames = Array.from(files).map(file => file.name).join(', ');
     
-    // Simulate an upload process
     setTimeout(() => {
       setIsUploading(false);
       setUploadComplete(true);
       
-      // Show upload success toast
       toast({
         title: t('Upload Complete'),
         description: t('Your files have been successfully uploaded'),
-        variant: 'success',
+        variant: "default",
       });
       
-      // Reset after a few seconds
       setTimeout(() => {
         setUploadComplete(false);
       }, 3000);
@@ -90,7 +84,7 @@ export default function UploadZone() {
             onDrop={handleDrop}
           >
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary-100 text-primary transform-3d element-3d">
-              <File3d className="h-8 w-8" />
+              <File className="h-8 w-8" />
             </div>
             <div className="mt-4">
               <h3 className="text-lg font-medium text-gray-700">{t('Upload your documents')}</h3>

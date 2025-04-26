@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { File3d, FileText, Image } from 'lucide-react';
+import { File, FileText, Image } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 
 const recentDocuments = [
@@ -19,7 +19,7 @@ const recentDocuments = [
     type: 'Word',
     date: 'Yesterday',
     progress: 40,
-    icon: <File3d className="h-4 w-4 text-blue-700" />
+    icon: <File className="h-4 w-4 text-blue-700" />
   },
   {
     id: 3,

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define available languages
@@ -296,7 +295,6 @@ const translations = {
     'Complete 10 study sessions': 'أكمل 10 جلسات دراسية',
     'Complete 20 study sessions': 'أكمل 20 جلسة دراسية',
     'Complete 30 study sessions': 'أكمل 30 جلسة دراسية',
-    'My Documents': 'مستنداتي',
     'Document 1': 'المستند 1',
     'Document 2': 'المستند 2',
     'Document 3': 'المستند 3',
