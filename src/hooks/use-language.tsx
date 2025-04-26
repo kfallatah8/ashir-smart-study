@@ -38,7 +38,7 @@ const translations = {
     'Friends': 'Friends',
     'Top Students': 'Top Students',
     'This Week': 'This Week',
-    'This Month': 'This Month', 
+    'This Month': 'This Month',
     'This Semester': 'This Semester',
     'pts': 'pts',
     'Computer Science Major - Top Students': 'Computer Science Major - Top Students',
@@ -53,10 +53,9 @@ const translations = {
     'Choose your preferred language and region settings.': 'Choose your preferred language and region settings.',
     'Notifications': 'Notifications',
     'Security': 'Security',
-    // Study Tools Translations
     'AI Study Tools': 'AI Study Tools',
     'Mind Maps': 'Mind Maps',
-    'Flashcards': 'Flashcards', 
+    'Flashcards': 'Flashcards',
     'Presentations': 'Presentations',
     'ELI5 Explanations': 'ELI5 Explanations',
     'Q&A Bot': 'Q&A Bot',
@@ -113,7 +112,6 @@ const translations = {
     'Yesterday': 'Yesterday',
     '2 days ago': '2 days ago',
     'Study Now': 'Study Now',
-    // Upload functionality
     'Upload your documents': 'Upload your documents',
     'Drag and drop your files here, or click to browse': 'Drag and drop your files here, or click to browse',
     'Supports PDFs, Word documents, images, and handwritten notes': 'Supports PDFs, Word documents, images, and handwritten notes',
@@ -124,7 +122,6 @@ const translations = {
     'Your document is ready for processing': 'Your document is ready for processing',
     'Upload Complete': 'Upload Complete',
     'Your files have been successfully uploaded': 'Your files have been successfully uploaded',
-    // Profile page
     'Edit Profile': 'Edit Profile',
     'Learning Stats': 'Learning Stats',
     'Study Hours': 'Study Hours',
@@ -206,7 +203,6 @@ const translations = {
     'Choose your preferred language and region settings.': 'اختر لغتك المفضلة وإعدادات المنطقة.',
     'Notifications': 'الإشعارات',
     'Security': 'الأمان',
-    // Study Tools Translations
     'AI Study Tools': 'أدوات الدراسة الذكية',
     'Mind Maps': 'خرائط ذهنية',
     'Flashcards': 'بطاقات تعليمية',
@@ -266,7 +262,6 @@ const translations = {
     'Yesterday': 'أمس',
     '2 days ago': 'منذ يومين',
     'Study Now': 'ابدأ الدراسة الآن',
-    // Upload functionality
     'Upload your documents': 'تحميل مستنداتك',
     'Drag and drop your files here, or click to browse': 'اسحب وأفلت ملفاتك هنا، أو انقر للتصفح',
     'Supports PDFs, Word documents, images, and handwritten notes': 'يدعم ملفات PDF ومستندات Word والصور والملاحظات المكتوبة بخط اليد',
@@ -277,7 +272,6 @@ const translations = {
     'Your document is ready for processing': 'مستندك جاهز للمعالجة',
     'Upload Complete': 'اكتمل التحميل',
     'Your files have been successfully uploaded': 'تم تحميل ملفاتك بنجاح',
-    // Profile page
     'Edit Profile': 'تعديل الملف الشخصي',
     'Learning Stats': 'إحصائيات التعلم',
     'Study Hours': 'ساعات الدراسة',
@@ -312,7 +306,6 @@ const translations = {
   }
 };
 
-// Context type
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
@@ -320,29 +313,23 @@ interface LanguageContextType {
   dir: 'ltr' | 'rtl';
 }
 
-// Create context
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Provider component
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Check if there's a stored language preference
   const savedLanguage = localStorage.getItem('language') as Language;
   const [language, setLanguage] = useState<Language>(savedLanguage || 'en');
   const [dir, setDir] = useState<'ltr' | 'rtl'>(language === 'ar' ? 'rtl' : 'ltr');
 
-  // Translate function
   const t = (key: string): string => {
     return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
-  // Update document direction when language changes and save preference
   useEffect(() => {
     const newDir = language === 'ar' ? 'rtl' : 'ltr';
     document.documentElement.dir = newDir;
     localStorage.setItem('language', language);
     setDir(newDir);
     
-    // Add RTL class to body if Arabic
     if (language === 'ar') {
       document.body.classList.add('rtl');
     } else {
@@ -357,7 +344,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   );
 };
 
-// Custom hook
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (context === undefined) {
