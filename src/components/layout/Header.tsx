@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bell, Menu, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +13,8 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -22,7 +23,21 @@ interface HeaderProps {
 export default function Header({ toggleSidebar }: HeaderProps) {
   const { language, setLanguage, t } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const isRTL = language === 'ar';
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: t('Error'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    } else {
+      navigate('/auth');
+    }
+  };
 
   const handleLanguageChange = (lang: 'en' | 'ar') => {
     setLanguage(lang);
@@ -98,17 +113,17 @@ export default function Header({ toggleSidebar }: HeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
               {t('Profile')}
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
               {t('Settings')}
             </DropdownMenuItem>
             <DropdownMenuItem>
               {t('Help & Support')}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignOut}>
               {t('Log out')}
             </DropdownMenuItem>
           </DropdownMenuContent>

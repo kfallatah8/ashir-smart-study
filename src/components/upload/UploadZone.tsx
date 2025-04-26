@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { File, Upload } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from '@/integrations/supabase/client';
 
 export default function UploadZone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -31,30 +33,54 @@ export default function UploadZone() {
     }
   };
   
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length) {
-      handleFileUpload(files);
-    }
-  };
-  
   const handleFileUpload = async (files: FileList) => {
     setIsUploading(true);
     
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsUploading(false);
-    setUploadComplete(true);
-    
-    toast({
-      title: t('Upload Complete'),
-      description: t('Your files have been successfully uploaded'),
-      variant: "default",
-    });
-    
-    setTimeout(() => {
-      setUploadComplete(false);
-    }, 3000);
+    try {
+      const file = files[0];
+      const user = (await supabase.auth.getSession()).data.session?.user;
+      
+      if (!user) {
+        throw new Error('You must be logged in to upload files');
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase.from('documents').insert({
+        title: file.name,
+        file_path: filePath,
+        file_type: file.type,
+        file_size: file.size,
+        user_id: user.id
+      });
+
+      if (dbError) throw dbError;
+
+      setUploadComplete(true);
+      toast({
+        title: t('Upload Complete'),
+        description: t('Your file has been successfully uploaded'),
+        variant: "default",
+      });
+    } catch (error: any) {
+      toast({
+        title: t('Upload Failed'),
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      setTimeout(() => {
+        setUploadComplete(false);
+      }, 3000);
+    }
   };
   
   return (
