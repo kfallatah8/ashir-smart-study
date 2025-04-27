@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Bell, Menu, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,23 +31,37 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   useEffect(() => {
     async function fetchUserData() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUser(user);
+        const { data, error } = await supabase.auth.getUser();
+        
+        if (error) {
+          console.error('Error fetching user:', error);
+          return;
+        }
+        
+        if (data?.user) {
+          setUser(data.user);
           
-          // Get profile data
-          const { data: profile } = await supabase
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('avatar_url, full_name')
-            .eq('id', user.id)
+            .eq('id', data.user.id)
             .single();
           
-          if (profile?.avatar_url) {
-            setProfileImage(profile.avatar_url);
+          if (profileError) {
+            console.error('Error fetching profile:', profileError);
+          } else if (profileData?.avatar_url) {
+            const { data: storageData } = await supabase
+              .storage
+              .from('avatars')
+              .getPublicUrl(profileData.avatar_url);
+              
+            if (storageData?.publicUrl) {
+              setProfileImage(storageData.publicUrl);
+            }
           }
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error in fetchUserData:', error);
       }
     }
     
@@ -79,8 +92,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
       description: lang === 'en' ? 'English language selected' : 'تم اختيار اللغة العربية',
     });
   };
-  
-  // Get the user's initials for avatar fallback
+
   const getUserInitials = () => {
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name
@@ -150,7 +162,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
             <Button variant="ghost" className="relative h-9 w-9 rounded-full transform-3d hover:element-3d overflow-visible ring-2 ring-primary-100/50 ring-offset-2">
               <Avatar className="h-9 w-9 border-2 border-white shadow-lg">
                 <AvatarImage 
-                  src={profileImage || '/placeholder.svg'} 
+                  src={profileImage || 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=150&h=150'} 
                   alt={user?.email || "User"} 
                   className="object-cover"
                 />

@@ -50,8 +50,8 @@ const Index = () => {
           <div className="space-y-6">
             <RecentDocumentsCard />
             
-            {/* Upload zone moved inside the left column under recent documents */}
-            <div>
+            {/* Only one upload section */}
+            <div className="bg-white p-6 rounded-xl shadow-sm transform-3d hover:element-3d">
               <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
               <UploadZone />
             </div>

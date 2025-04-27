@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './Header';
 import SidebarMenu from './SidebarMenu';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,8 +9,13 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // Initialize sidebar state based on device
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   const toggleSidebar = () => {
     setSidebarOpen(prev => !prev);
@@ -18,7 +23,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <SidebarMenu open={isMobile ? false : sidebarOpen} toggleSidebar={toggleSidebar} />
+      <SidebarMenu open={sidebarOpen} toggleSidebar={toggleSidebar} />
       <div className="flex-1 flex flex-col">
         <Header toggleSidebar={toggleSidebar} />
         <main className="flex-1 p-6 overflow-auto">

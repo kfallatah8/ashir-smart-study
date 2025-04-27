@@ -78,12 +78,6 @@ export default function WelcomeCard() {
 
         <div className="mt-4 flex space-x-3">
           <button 
-            onClick={() => document.getElementById('file-upload')?.click()} 
-            className="px-4 py-2 bg-white text-primary font-medium rounded-lg hover:bg-primary-100 transition-colors transform-3d hover:element-3d"
-          >
-            {t('Upload Document')}
-          </button>
-          <button 
             onClick={() => navigate('/study')}
             className="px-4 py-2 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors transform-3d hover:element-3d"
           >

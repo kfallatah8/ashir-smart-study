@@ -1,7 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { User } from '@supabase/supabase-js';
 
 interface ProfileData {
   id: string;
@@ -30,31 +28,27 @@ export async function uploadDocument(file: File, userId: string) {
 }
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
-  // First, get the user ID from the email
-  const userResult: PostgrestSingleResponse<ProfileData> = await supabase
+  // First, get the user ID from the email - fixed type instantiation issue
+  const { data: userData, error: userError } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', sharedWithEmail)
     .single();
     
-  if (userResult.error) throw userResult.error;
+  if (userError) throw userError;
   
-  if (!userResult.data) throw new Error('User not found');
+  if (!userData) throw new Error('User not found');
   
-  const userToShare = userResult.data;
-
   // Then create the share record
-  const authResponse = await supabase.auth.getUser();
-  const user: User | null = authResponse.data?.user || null;
-  
-  if (!user) throw new Error('User not authenticated');
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  if (authError || !authData.user) throw new Error('User not authenticated');
 
   const { error: shareError } = await supabase
     .from('document_shares')
     .insert({
       document_id: documentId,
-      shared_by: user.id,
-      shared_with: userToShare.id
+      shared_by: authData.user.id,
+      shared_with: userData.id
     });
 
   if (shareError) throw shareError;
