@@ -25,23 +25,27 @@ export async function uploadDocument(file: File, userId: string) {
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
   // First, get the user ID from the email
-  const { data: userToShare, error: userError } = await supabase
+  const { data, error: userError } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', sharedWithEmail)
     .single();
 
   if (userError) throw userError;
+  
+  if (!data) throw new Error('User not found');
+  
+  const userToShare = data;
 
   // Then create the share record
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error('User not authenticated');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
   const { error: shareError } = await supabase
     .from('document_shares')
     .insert({
       document_id: documentId,
-      shared_by: user.user.id,
+      shared_by: userData.user.id,
       shared_with: userToShare.id
     });
 
@@ -49,14 +53,14 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
 }
 
 export async function updateDocumentProgress(documentId: string, progress: number, lastPage?: number) {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error('User not authenticated');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
   const { error } = await supabase
     .from('document_progress')
     .upsert({
       document_id: documentId,
-      user_id: user.user.id,
+      user_id: userData.user.id,
       progress_percentage: progress,
       last_page_viewed: lastPage || 1,
       last_viewed_at: new Date().toISOString()
@@ -66,8 +70,8 @@ export async function updateDocumentProgress(documentId: string, progress: numbe
 }
 
 export async function searchDocuments(query: string) {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error('User not authenticated');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
   // Search in documents owned by the user or shared with the user
   const { data, error } = await supabase
@@ -81,8 +85,8 @@ export async function searchDocuments(query: string) {
 }
 
 export async function getSharedDocuments() {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error('User not authenticated');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
   const { data, error } = await supabase
     .from('documents')
@@ -93,21 +97,21 @@ export async function getSharedDocuments() {
         shared_with
       )
     `)
-    .eq('document_shares.shared_with', user.user.id);
+    .eq('document_shares.shared_with', userData.user.id);
 
   if (error) throw error;
   return data;
 }
 
 export async function getDocumentProgress(documentId: string) {
-  const { data: user } = await supabase.auth.getUser();
-  if (!user.user) throw new Error('User not authenticated');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
   const { data, error } = await supabase
     .from('document_progress')
     .select('*')
     .eq('document_id', documentId)
-    .eq('user_id', user.user.id)
+    .eq('user_id', userData.user.id)
     .single();
 
   if (error && error.code !== 'PGRST116') {
