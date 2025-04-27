@@ -24,6 +24,7 @@ export async function uploadDocument(file: File, userId: string) {
 }
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
+  // First, get the user ID from the email
   const { data: userToShare, error: userError } = await supabase
     .from('profiles')
     .select('id')
@@ -32,11 +33,15 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
 
   if (userError) throw userError;
 
+  // Then create the share record
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
   const { error: shareError } = await supabase
     .from('document_shares')
     .insert({
       document_id: documentId,
-      shared_by: (await supabase.auth.getUser()).data.user?.id,
+      shared_by: user.user.id,
       shared_with: userToShare.id
     });
 
@@ -44,18 +49,71 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
 }
 
 export async function updateDocumentProgress(documentId: string, progress: number, lastPage?: number) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error('User not authenticated');
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
 
   const { error } = await supabase
     .from('document_progress')
     .upsert({
       document_id: documentId,
-      user_id: user.id,
+      user_id: user.user.id,
       progress_percentage: progress,
       last_page_viewed: lastPage || 1,
       last_viewed_at: new Date().toISOString()
     });
 
   if (error) throw error;
+}
+
+export async function searchDocuments(query: string) {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  // Search in documents owned by the user or shared with the user
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*')
+    .textSearch('document_vector', query)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getSharedDocuments() {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('documents')
+    .select(`
+      *,
+      document_shares!inner (
+        shared_by,
+        shared_with
+      )
+    `)
+    .eq('document_shares.shared_with', user.user.id);
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getDocumentProgress(documentId: string) {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('document_progress')
+    .select('*')
+    .eq('document_id', documentId)
+    .eq('user_id', user.user.id)
+    .single();
+
+  if (error && error.code !== 'PGRST116') {
+    // PGRST116 is the error code for "no rows returned"
+    throw error;
+  }
+
+  return data;
 }

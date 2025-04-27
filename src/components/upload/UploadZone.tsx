@@ -20,7 +20,9 @@ export default function UploadZone() {
     setUploadProgress(0);
     
     try {
-      const user = (await supabase.auth.getUser()).data.user;
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      
       if (!user) throw new Error('You must be logged in to upload files');
 
       const file = files[0];
