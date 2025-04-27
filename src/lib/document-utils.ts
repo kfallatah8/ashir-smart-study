@@ -1,5 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
+
+interface ProfileData {
+  id: string;
+}
 
 export async function uploadDocument(file: File, userId: string) {
   const filePath = `${userId}/${Date.now()}-${file.name}`;
@@ -25,27 +31,29 @@ export async function uploadDocument(file: File, userId: string) {
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
   // First, get the user ID from the email
-  const { data, error: userError } = await supabase
+  const userResult: PostgrestSingleResponse<ProfileData> = await supabase
     .from('profiles')
     .select('id')
     .eq('email', sharedWithEmail)
     .single();
-
-  if (userError) throw userError;
+    
+  if (userResult.error) throw userResult.error;
   
-  if (!data) throw new Error('User not found');
+  if (!userResult.data) throw new Error('User not found');
   
-  const userToShare = data;
+  const userToShare = userResult.data;
 
   // Then create the share record
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) throw new Error('User not authenticated');
+  const authResponse = await supabase.auth.getUser();
+  const user: User | null = authResponse.data?.user || null;
+  
+  if (!user) throw new Error('User not authenticated');
 
   const { error: shareError } = await supabase
     .from('document_shares')
     .insert({
       document_id: documentId,
-      shared_by: userData.user.id,
+      shared_by: user.id,
       shared_with: userToShare.id
     });
 

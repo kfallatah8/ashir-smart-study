@@ -14,7 +14,7 @@ const Index = () => {
   
   return (
     <MainLayout>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in max-w-7xl mx-auto">
         <div className="mb-8">
           <WelcomeCard />
         </div>
@@ -47,13 +47,19 @@ const Index = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <RecentDocumentsCard />
-          <StudyToolsCard />
-        </div>
-
-        <div className="mb-8">
-          <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
-          <UploadZone />
+          <div className="space-y-6">
+            <RecentDocumentsCard />
+            
+            {/* Upload zone moved inside the left column under recent documents */}
+            <div>
+              <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
+              <UploadZone />
+            </div>
+          </div>
+          
+          <div>
+            <StudyToolsCard />
+          </div>
         </div>
       </div>
     </MainLayout>
