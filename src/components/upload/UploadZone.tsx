@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadDocument } from '@/lib/document-utils';
 import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
+import { useNavigate } from 'react-router-dom';
 
 export default function UploadZone() {
   const [isDragging, setIsDragging] = useState(false);
@@ -17,6 +18,7 @@ export default function UploadZone() {
   const [fileName, setFileName] = useState<string | null>(null);
   const { t } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   // Reset status after successful upload
   useEffect(() => {
@@ -62,7 +64,8 @@ export default function UploadZone() {
       
       toast({
         title: t('Upload Complete'),
-        description: t('Your file has been successfully uploaded'),
+        description: t('Your file has been successfully uploaded. You can now use it with AI study tools!'),
+        action: <Button size="sm" variant="outline" onClick={() => navigate('/study')}>Go to Study Tools</Button>
       });
     } catch (error: any) {
       setUploadStatus('error');
@@ -74,7 +77,7 @@ export default function UploadZone() {
     } finally {
       setIsUploading(false);
     }
-  }, [t, toast]);
+  }, [t, toast, navigate]);
   
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -157,29 +160,51 @@ export default function UploadZone() {
             </div>
           )}
 
-          <div className="mt-4 flex justify-center">
-            <label htmlFor="file-upload">
-              <Button
-                variant="outline"
-                className={`mx-auto border-primary text-primary hover:bg-primary hover:text-white transform-3d hover:element-3d ${
-                  (uploadStatus === 'uploading' || uploadStatus === 'success') ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
+          {uploadStatus === 'success' && (
+            <div className="mt-4 flex justify-center space-x-2">
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => navigate('/study')}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                {t('Browse Files')}
+                {t('Go to Study Tools')}
               </Button>
-              <input
-                id="file-upload"
-                name="file-upload"
-                type="file"
-                className="sr-only"
-                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                multiple={false}
-                disabled={uploadStatus === 'uploading' || uploadStatus === 'success'}
-              />
-            </label>
-          </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setUploadStatus('idle')}
+              >
+                {t('Upload Another')}
+              </Button>
+            </div>
+          )}
+
+          {uploadStatus !== 'success' && (
+            <div className="mt-4 flex justify-center">
+              <label htmlFor="file-upload">
+                <Button
+                  variant="outline"
+                  className={`mx-auto border-primary text-primary hover:bg-primary hover:text-white transform-3d hover:element-3d ${
+                    (uploadStatus === 'uploading') ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                  disabled={uploadStatus === 'uploading'}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t('Browse Files')}
+                </Button>
+                <input
+                  id="file-upload"
+                  name="file-upload"
+                  type="file"
+                  className="sr-only"
+                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                  multiple={false}
+                  disabled={uploadStatus === 'uploading'}
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                />
+              </label>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

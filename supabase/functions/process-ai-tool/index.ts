@@ -44,16 +44,47 @@ Deno.serve(async (req) => {
       .update({ status: 'processing' })
       .eq('id', taskId)
 
+    // Get document content
+    const { data: document } = task.documents
+    if (!document) throw new Error('Document not found')
+
+    // Download document content if needed
+    let documentContent = document.document_text
+    if (!documentContent && document.file_path) {
+      const { data: fileData, error: fileError } = await supabaseClient
+        .storage
+        .from('documents')
+        .download(document.file_path)
+
+      if (fileError) throw fileError
+      
+      // For demo purposes, we'll just extract text from PDF or assume plain text
+      // In a real app, you would use a library to parse different file types
+      const text = "This is sample text extracted from the document: " + document.title
+      documentContent = text
+    }
+
     // Process based on tool type
     let result
     switch (task.tool_type) {
       case 'mind_map':
-        // Implementation for mind map
+        console.log("Generating mind map for document:", document.title)
+        result = await generateMindMap(openai, documentContent || document.title)
         break
       case 'flashcards':
-        // Implementation for flashcards
+        console.log("Generating flashcards for document:", document.title)
+        result = await generateFlashcards(openai, documentContent || document.title)
         break
-      // Add other tool types here
+      case 'presentations':
+        console.log("Generating presentation for document:", document.title)
+        result = await generatePresentation(openai, documentContent || document.title)
+        break
+      case 'eli5':
+        console.log("Generating ELI5 explanation for document:", document.title)
+        result = await generateELI5(openai, documentContent || document.title)
+        break
+      default:
+        throw new Error(`Unsupported tool type: ${task.tool_type}`)
     }
 
     // Update task with result
@@ -72,7 +103,7 @@ Deno.serve(async (req) => {
       .insert({
         user_id: task.user_id,
         title: 'AI Tool Complete',
-        message: `Your ${task.tool_type} has been generated successfully!`,
+        message: `Your ${task.tool_type.replace('_', ' ')} has been generated successfully!`,
         type: 'ai_tool_complete'
       })
 
@@ -81,6 +112,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error processing AI tool:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
@@ -90,3 +122,160 @@ Deno.serve(async (req) => {
     )
   }
 })
+
+// AI Tool generation functions
+async function generateMindMap(openai: OpenAIApi, text: string) {
+  const prompt = `
+Create a mind map structure based on the following text. The mind map should:
+1. Identify the main topic
+2. Have 3-5 main branches (key concepts)
+3. Have 2-3 sub-branches under each main branch
+4. Be formatted as JSON with the following structure:
+{
+  "topic": "Main Topic",
+  "branches": [
+    {
+      "name": "Branch 1",
+      "children": [
+        {"name": "Sub-branch 1.1"},
+        {"name": "Sub-branch 1.2"}
+      ]
+    },
+    ...more branches
+  ]
+}
+
+Text to analyze: ${text.substring(0, 3000)}
+`;
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {role: "system", content: "You are an expert educator that creates helpful mind maps from educational content."},
+      {role: "user", content: prompt}
+    ],
+  });
+
+  const content = response.data.choices[0]?.message?.content
+  try {
+    return JSON.parse(content ?? '{}')
+  } catch (e) {
+    console.error("Error parsing mind map JSON:", e)
+    return { topic: "Error parsing mind map", branches: [] }
+  }
+}
+
+async function generateFlashcards(openai: OpenAIApi, text: string) {
+  const prompt = `
+Create a set of 10 flashcards based on the following text. Each flashcard should:
+1. Have a clear question on the front
+2. Have a concise answer on the back
+3. Cover an important concept from the text
+4. Be formatted as JSON with the following structure:
+[
+  {
+    "front": "Question 1",
+    "back": "Answer 1"
+  },
+  ...more flashcards
+]
+
+Text to analyze: ${text.substring(0, 3000)}
+`;
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {role: "system", content: "You are an expert educator that creates effective flashcards from educational content."},
+      {role: "user", content: prompt}
+    ],
+  });
+
+  const content = response.data.choices[0]?.message?.content
+  try {
+    return JSON.parse(content ?? '[]')
+  } catch (e) {
+    console.error("Error parsing flashcards JSON:", e)
+    return []
+  }
+}
+
+async function generatePresentation(openai: OpenAIApi, text: string) {
+  const prompt = `
+Create a presentation outline based on the following text. The presentation should:
+1. Have an introduction slide
+2. Have 5-7 content slides
+3. Have a conclusion slide
+4. Each slide should have a title and bullet points
+5. Be formatted as JSON with the following structure:
+[
+  {
+    "title": "Slide 1 Title",
+    "type": "introduction",
+    "content": ["Bullet point 1", "Bullet point 2"]
+  },
+  ...more slides
+]
+
+Text to analyze: ${text.substring(0, 3000)}
+`;
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {role: "system", content: "You are an expert educator that creates engaging presentations from educational content."},
+      {role: "user", content: prompt}
+    ],
+  });
+
+  const content = response.data.choices[0]?.message?.content
+  try {
+    return JSON.parse(content ?? '[]')
+  } catch (e) {
+    console.error("Error parsing presentation JSON:", e)
+    return []
+  }
+}
+
+async function generateELI5(openai: OpenAIApi, text: string) {
+  const prompt = `
+Create a simplified "Explain Like I'm 5" explanation of the concepts in this text:
+
+${text.substring(0, 3000)}
+
+The explanation should:
+1. Use simple language a child could understand
+2. Use analogies to explain complex concepts
+3. Be engaging and fun
+4. Cover the main topics from the text
+5. Be formatted as JSON with the following structure:
+{
+  "title": "Simple title",
+  "summary": "One paragraph summary",
+  "explanations": [
+    {
+      "concept": "Concept name",
+      "explanation": "Simple explanation",
+      "analogy": "Helpful analogy"
+    },
+    ...more concepts
+  ]
+}
+`;
+
+  const response = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {role: "system", content: "You are an expert educator that simplifies complex topics for children."},
+      {role: "user", content: prompt}
+    ],
+  });
+
+  const content = response.data.choices[0]?.message?.content
+  try {
+    return JSON.parse(content ?? '{}')
+  } catch (e) {
+    console.error("Error parsing ELI5 JSON:", e)
+    return { title: "Error parsing explanation", summary: "Could not generate explanation", explanations: [] }
+  }
+}

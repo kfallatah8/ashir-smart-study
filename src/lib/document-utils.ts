@@ -117,6 +117,33 @@ export async function getDocumentProgress(documentId: string) {
   return data;
 }
 
+// Get all user documents
+export async function getUserDocuments() {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*')
+    .eq('user_id', userData.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+// Get document by ID
+export async function getDocumentById(documentId: string) {
+  const { data, error } = await supabase
+    .from('documents')
+    .select('*')
+    .eq('id', documentId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
 // New functions for AI tools
 export async function createAIToolTask(documentId: string, toolType: string) {
   const { data: userData } = await supabase.auth.getUser();
@@ -138,28 +165,25 @@ export async function createAIToolTask(documentId: string, toolType: string) {
 }
 
 // Fix: Explicitly define the return type to prevent infinite type instantiation
-export async function getAIToolTasks(documentId: string) {
+export async function getAIToolTasks(documentId: string): Promise<Array<{
+  id: string;
+  document_id: string;
+  user_id: string;
+  tool_type: string;
+  status: string;
+  result: any;
+  created_at: string;
+  updated_at: string;
+}> | null> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
-
-  // Define explicit return type for the query
-  type AIToolTask = {
-    id: string;
-    document_id: string;
-    user_id: string;
-    tool_type: string;
-    status: string;
-    result: any;
-    created_at: string;
-    updated_at: string;
-  };
 
   const { data, error } = await supabase
     .from('ai_tool_tasks')
     .select('*')
     .eq('document_id', documentId)
     .eq('user_id', userData.user.id)
-    .order('created_at', { ascending: false }) as { data: AIToolTask[] | null, error: any };
+    .order('created_at', { ascending: false });
 
   if (error) throw error;
   return data;
