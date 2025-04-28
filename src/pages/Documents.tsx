@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useLanguage } from '@/hooks/use-language';
@@ -81,6 +80,12 @@ export default function Documents() {
           <h1 className="text-2xl font-bold">{t('My Documents')}</h1>
           <Button 
             className={cn("flex items-center", isRTL && "flex-row-reverse")}
+            onClick={() => {
+              const uploadSection = document.getElementById('upload-section');
+              if (uploadSection) {
+                uploadSection.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
           >
             <Plus className={cn("h-4 w-4", isRTL ? "ml-2" : "mr-2")} />
             <span>{t('Upload Document')}</span>
@@ -165,7 +170,7 @@ export default function Documents() {
           </CardContent>
         </Card>
 
-        <div className="mb-8">
+        <div id="upload-section" className="mb-8">
           <h2 className="text-xl font-bold mb-4">{t('Upload New Document')}</h2>
           <UploadZone />
         </div>

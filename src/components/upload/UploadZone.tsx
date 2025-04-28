@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +20,6 @@ export default function UploadZone() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Reset status after successful upload
   useEffect(() => {
     if (uploadStatus === 'success') {
       const timer = setTimeout(() => {
@@ -49,7 +47,6 @@ export default function UploadZone() {
       
       if (!user) throw new Error('You must be logged in to upload files');
 
-      // Simulate progress updates (since we can't get real progress from current implementation)
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
           if (prev >= 90) clearInterval(progressInterval);
@@ -98,13 +95,12 @@ export default function UploadZone() {
       handleFileUpload(files);
     }
   }, [handleFileUpload]);
-
-  // New function to trigger file input click
-  const triggerFileInput = () => {
+  
+  const triggerFileInput = useCallback(() => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
-  };
+  }, [fileInputRef]);
 
   return (
     <Card 
@@ -196,6 +192,7 @@ export default function UploadZone() {
                 }`}
                 disabled={uploadStatus === 'uploading'}
                 onClick={triggerFileInput}
+                type="button"
               >
                 <Upload className="mr-2 h-4 w-4" />
                 {t('Browse Files')}

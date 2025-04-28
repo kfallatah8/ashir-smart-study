@@ -143,7 +143,7 @@ export async function getDocumentById(documentId: string) {
   return data;
 }
 
-// Define the AIToolTask type explicitly to avoid infinite recursion
+// Define the AIToolTask interface explicitly to avoid infinite recursion
 export interface AIToolTask {
   id: string;
   document_id: string;
@@ -155,7 +155,7 @@ export interface AIToolTask {
   updated_at: string;
 }
 
-// New functions for AI tools
+// Create a new AI tool task
 export async function createAIToolTask(documentId: string, toolType: string) {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
@@ -172,11 +172,11 @@ export async function createAIToolTask(documentId: string, toolType: string) {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as AIToolTask;
 }
 
-// Fix: Explicitly define the return type to prevent infinite type instantiation
-export async function getAIToolTasks(documentId: string): Promise<AIToolTask[] | null> {
+// Get AI tool tasks for a document with explicit return type
+export async function getAIToolTasks(documentId: string): Promise<AIToolTask[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
@@ -188,5 +188,5 @@ export async function getAIToolTasks(documentId: string): Promise<AIToolTask[] |
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data as AIToolTask[] | null;
+  return data as AIToolTask[] || [];
 }
