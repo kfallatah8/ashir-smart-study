@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
@@ -144,6 +143,18 @@ export async function getDocumentById(documentId: string) {
   return data;
 }
 
+// Define the AIToolTask type explicitly to avoid infinite recursion
+export interface AIToolTask {
+  id: string;
+  document_id: string;
+  user_id: string;
+  tool_type: string;
+  status: string;
+  result: any;
+  created_at: string;
+  updated_at: string;
+}
+
 // New functions for AI tools
 export async function createAIToolTask(documentId: string, toolType: string) {
   const { data: userData } = await supabase.auth.getUser();
@@ -165,16 +176,7 @@ export async function createAIToolTask(documentId: string, toolType: string) {
 }
 
 // Fix: Explicitly define the return type to prevent infinite type instantiation
-export async function getAIToolTasks(documentId: string): Promise<Array<{
-  id: string;
-  document_id: string;
-  user_id: string;
-  tool_type: string;
-  status: string;
-  result: any;
-  created_at: string;
-  updated_at: string;
-}> | null> {
+export async function getAIToolTasks(documentId: string): Promise<AIToolTask[] | null> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
@@ -186,5 +188,5 @@ export async function getAIToolTasks(documentId: string): Promise<Array<{
     .order('created_at', { ascending: false });
 
   if (error) throw error;
-  return data;
+  return data as AIToolTask[] | null;
 }
