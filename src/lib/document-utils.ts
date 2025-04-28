@@ -1,9 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
-interface ProfileData {
-  id: string;
-}
+import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
   const filePath = `${userId}/${Date.now()}-${file.name}`;
@@ -28,18 +24,17 @@ export async function uploadDocument(file: File, userId: string) {
 }
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
-  // First, get the user ID from the email - fixed type instantiation issue
-  const { data: userData, error: userError } = await supabase
+  // Get the user ID from the email
+  const { data, error: userError } = await supabase
     .from('profiles')
     .select('id')
     .eq('email', sharedWithEmail)
-    .single();
+    .maybeSingle();
     
   if (userError) throw userError;
+  if (!data) throw new Error('User not found');
   
-  if (!userData) throw new Error('User not found');
-  
-  // Then create the share record
+  // Create the share record
   const { data: authData, error: authError } = await supabase.auth.getUser();
   if (authError || !authData.user) throw new Error('User not authenticated');
 
@@ -48,7 +43,7 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
     .insert({
       document_id: documentId,
       shared_by: authData.user.id,
-      shared_with: userData.id
+      shared_with: data.id
     });
 
   if (shareError) throw shareError;
@@ -75,7 +70,6 @@ export async function searchDocuments(query: string) {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
-  // Search in documents owned by the user or shared with the user
   const { data, error } = await supabase
     .from('documents')
     .select('*')
@@ -114,12 +108,46 @@ export async function getDocumentProgress(documentId: string) {
     .select('*')
     .eq('document_id', documentId)
     .eq('user_id', userData.user.id)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') {
-    // PGRST116 is the error code for "no rows returned"
+  if (error && error.code !== 'PGRST116') { // PGRST116 is the error code for "no rows returned"
     throw error;
   }
 
+  return data;
+}
+
+// New functions for AI tools
+export async function createAIToolTask(documentId: string, toolType: string) {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('ai_tool_tasks')
+    .insert({
+      document_id: documentId,
+      user_id: userData.user.id,
+      tool_type: toolType,
+      status: 'pending'
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function getAIToolTasks(documentId: string) {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
+
+  const { data, error } = await supabase
+    .from('ai_tool_tasks')
+    .select('*')
+    .eq('document_id', documentId)
+    .eq('user_id', userData.user.id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
   return data;
 }
