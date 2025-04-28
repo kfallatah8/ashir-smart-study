@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { File, Upload, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function UploadZone() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Reset status after successful upload
   useEffect(() => {
@@ -97,6 +98,13 @@ export default function UploadZone() {
       handleFileUpload(files);
     }
   }, [handleFileUpload]);
+
+  // New function to trigger file input click
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   return (
     <Card 
@@ -181,28 +189,28 @@ export default function UploadZone() {
 
           {uploadStatus !== 'success' && (
             <div className="mt-4 flex justify-center">
-              <label htmlFor="file-upload">
-                <Button
-                  variant="outline"
-                  className={`mx-auto border-primary text-primary hover:bg-primary hover:text-white transform-3d hover:element-3d ${
-                    (uploadStatus === 'uploading') ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  disabled={uploadStatus === 'uploading'}
-                >
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t('Browse Files')}
-                </Button>
-                <input
-                  id="file-upload"
-                  name="file-upload"
-                  type="file"
-                  className="sr-only"
-                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                  multiple={false}
-                  disabled={uploadStatus === 'uploading'}
-                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
-                />
-              </label>
+              <Button
+                variant="outline"
+                className={`mx-auto border-primary text-primary hover:bg-primary hover:text-white transform-3d hover:element-3d ${
+                  (uploadStatus === 'uploading') ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={uploadStatus === 'uploading'}
+                onClick={triggerFileInput}
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {t('Browse Files')}
+              </Button>
+              <input
+                ref={fileInputRef}
+                id="file-upload"
+                name="file-upload"
+                type="file"
+                className="sr-only"
+                onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                multiple={false}
+                disabled={uploadStatus === 'uploading'}
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+              />
             </div>
           )}
         </div>
