@@ -137,16 +137,29 @@ export async function createAIToolTask(documentId: string, toolType: string) {
   return data;
 }
 
+// Fix: Explicitly define the return type to prevent infinite type instantiation
 export async function getAIToolTasks(documentId: string) {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
+
+  // Define explicit return type for the query
+  type AIToolTask = {
+    id: string;
+    document_id: string;
+    user_id: string;
+    tool_type: string;
+    status: string;
+    result: any;
+    created_at: string;
+    updated_at: string;
+  };
 
   const { data, error } = await supabase
     .from('ai_tool_tasks')
     .select('*')
     .eq('document_id', documentId)
     .eq('user_id', userData.user.id)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }) as { data: AIToolTask[] | null, error: any };
 
   if (error) throw error;
   return data;
