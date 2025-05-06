@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
@@ -163,7 +164,7 @@ export interface FlashcardItem {
   answer: string;
 }
 
-// Define the AIToolTask interface with more specific result types
+// Define the AIToolTask interface with a simple unknown type for result to avoid infinite type recursion
 export interface AIToolTask {
   id: string;
   document_id: string;
