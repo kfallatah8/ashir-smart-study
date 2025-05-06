@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
@@ -165,14 +166,14 @@ export interface FlashcardItem {
   answer: string;
 }
 
-// Define the AIToolTask interface with a simple type that won't cause recursive type issues
+// Define the AIToolTask interface with a simple non-recursive type
 export interface AIToolTask {
   id: string;
   document_id: string;
   user_id: string;
   tool_type: string;
   status: string;
-  result: Record<string, any>; // Using Record<string, any> instead of recursive types
+  result: Record<string, any>; // Using Record<string, any> to avoid recursive type issues
   created_at: string;
   updated_at: string;
 }
