@@ -63,7 +63,7 @@ export function useAITools(documentId: string) {
       });
       
       // Update the tasks list with the new task
-      setTasks(prev => [task, ...prev]);
+      setTasks(prev => [task as AIToolTask, ...prev]);
     } catch (error: any) {
       toast({
         title: 'Error',

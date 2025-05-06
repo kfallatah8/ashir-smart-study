@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
   // Get the user ID from the email
@@ -31,6 +32,14 @@ export async function getSharedDocuments() {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
+  // Use explicit typing to avoid deep type instantiation
+  type SharedDocument = Database['public']['Tables']['documents']['Row'] & {
+    document_shares: {
+      shared_by: string;
+      shared_with: string;
+    }[];
+  };
+
   const { data, error } = await supabase
     .from('documents')
     .select(`
@@ -43,5 +52,5 @@ export async function getSharedDocuments() {
     .eq('document_shares.shared_with', userData.user.id);
 
   if (error) throw error;
-  return data || [];
+  return (data || []) as SharedDocument[];
 }

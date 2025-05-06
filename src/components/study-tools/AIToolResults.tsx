@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
@@ -5,7 +6,8 @@ import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { 
   AIToolTask, 
   isMindMapResult, 
-  isFlashcardsResult 
+  isFlashcardsResult,
+  FlashcardItem
 } from '@/lib/documents';
 
 interface AIToolResultsProps {
@@ -47,7 +49,7 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
           <ul className="list-disc pl-5">
             {task.result.nodes.map((node) => (
               <li key={node.id}>
-                {node.label} ({node.type})
+                {node.label} {node.type && `(${node.type})`}
               </li>
             ))}
           </ul>
@@ -58,7 +60,7 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
     if (toolType === 'flashcards' && isFlashcardsResult(task.result)) {
       return (
         <div className="space-y-3">
-          {task.result.map((card, index) => (
+          {task.result.cards.map((card: FlashcardItem, index: number) => (
             <div key={index} className="border p-3 rounded bg-white">
               <p className="font-medium">{card.question}</p>
               <p className="text-gray-600 mt-1">{card.answer}</p>
@@ -112,7 +114,7 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
             )}
             
             <p className="text-xs text-gray-500 mt-2">
-              {new Date(task.created_at).toLocaleString()}
+              {new Date(task.created_at || '').toLocaleString()}
             </p>
           </CardContent>
         </Card>

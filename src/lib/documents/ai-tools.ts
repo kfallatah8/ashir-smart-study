@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export type MindMapNode = {
   id: string;
   label: string;
+  type?: string;  // Added type property
   group?: string;
 };
 
@@ -68,18 +69,25 @@ export async function createAIToolTask(documentId: string, toolType: string) {
     .single();
 
   if (error) throw error;
-  return data;
+  return data as AIToolTask;
 }
 
-export async function getAIToolTasks() {
+export async function getAIToolTasks(documentId?: string) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('User not authenticated');
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('ai_tool_tasks')
     .select('*')
     .eq('user_id', userData.user.id);
+    
+  // Add document filter if provided
+  if (documentId) {
+    query = query.eq('document_id', documentId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw error;
-  return data;
+  return data as AIToolTask[];
 }
