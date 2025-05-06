@@ -144,14 +144,14 @@ export async function getDocumentById(documentId: string) {
   return data;
 }
 
-// Define the AIToolTask interface explicitly to avoid infinite recursion
+// Define the AIToolTask interface explicitly with simple types to avoid circular references
 export interface AIToolTask {
   id: string;
   document_id: string;
   user_id: string;
   tool_type: string;
   status: string;
-  result: any; // Using 'any' for the result to prevent circular references
+  result: unknown; // Using 'unknown' type instead of 'any' to be more type-safe
   created_at: string;
   updated_at: string;
 }
