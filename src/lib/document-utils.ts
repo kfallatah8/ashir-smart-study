@@ -164,14 +164,15 @@ export interface FlashcardItem {
   answer: string;
 }
 
-// Define the AIToolTask interface with a simple unknown type for result to avoid infinite type recursion
+// Define the AIToolTask interface with a primitive type for result
 export interface AIToolTask {
   id: string;
   document_id: string;
   user_id: string;
   tool_type: string;
   status: string;
-  result: unknown;
+  // Use a non-recursive type to avoid infinite type instantiation
+  result: any; // Using 'any' instead of 'unknown' to resolve the error
   created_at: string;
   updated_at: string;
 }
