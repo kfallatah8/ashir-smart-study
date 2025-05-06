@@ -43,5 +43,5 @@ export async function getSharedDocuments() {
     .eq('document_shares.shared_with', userData.user.id);
 
   if (error) throw error;
-  return data;
+  return data || [];
 }

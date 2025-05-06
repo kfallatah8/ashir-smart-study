@@ -1,93 +1,85 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Define specific result type interfaces for different AI tools
-export interface MindMapNode {
+// Define explicit types for AI tool results to avoid recursive type issues
+export type MindMapNode = {
   id: string;
   label: string;
-  type: string;
-}
+  group?: string;
+};
 
-export interface MindMapEdge {
-  source: string;
-  target: string;
-}
+export type MindMapEdge = {
+  from: string;
+  to: string;
+  label?: string;
+};
 
-export interface MindMapResult {
+export type MindMapResult = {
+  type: 'mindmap';
   nodes: MindMapNode[];
-  edges?: MindMapEdge[];
-}
+  edges: MindMapEdge[];
+};
 
-export interface FlashcardItem {
+export type FlashcardItem = {
+  id: string;
   question: string;
   answer: string;
-}
+};
 
-// Define the AIToolTask interface with a simple non-recursive type
-export interface AIToolTask {
+// Define base AIToolTask type with non-recursive result type
+export type AIToolTask = {
   id: string;
-  document_id: string;
-  user_id: string;
+  document_id: string | null;
   tool_type: string;
   status: string;
-  result: Record<string, any>; // Using Record<string, any> to avoid recursive type issues
-  created_at: string;
-  updated_at: string;
-}
+  created_at: string | null;
+  updated_at: string | null;
+  user_id: string;
+  result: Record<string, any> | null; // Use Record<string, any> to avoid recursive type instantiation
+};
 
-// Helper functions to type-check results
+// Type guards for runtime type checking
 export function isMindMapResult(result: any): result is MindMapResult {
-  return (
-    typeof result === 'object' && 
-    result !== null && 
-    'nodes' in result && 
-    Array.isArray(result.nodes)
-  );
+  return result && 
+    result.type === 'mindmap' && 
+    Array.isArray(result.nodes) && 
+    Array.isArray(result.edges);
 }
 
-export function isFlashcardsResult(result: any): result is FlashcardItem[] {
-  return (
-    Array.isArray(result) && 
-    result.length > 0 && 
-    typeof result[0] === 'object' && 
-    result[0] !== null &&
-    'question' in result[0] && 
-    'answer' in result[0]
-  );
+export function isFlashcardsResult(result: any): result is { type: 'flashcards', cards: FlashcardItem[] } {
+  return result && 
+    result.type === 'flashcards' && 
+    Array.isArray(result.cards);
 }
 
-// Create a new AI tool task
 export async function createAIToolTask(documentId: string, toolType: string) {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) throw new Error('User not authenticated');
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error('User not authenticated');
 
   const { data, error } = await supabase
     .from('ai_tool_tasks')
     .insert({
       document_id: documentId,
-      user_id: userData.user.id,
       tool_type: toolType,
-      status: 'pending'
+      user_id: userData.user.id,
+      status: 'pending',
     })
     .select()
     .single();
 
   if (error) throw error;
-  return data as AIToolTask;
+  return data;
 }
 
-// Get AI tool tasks for a document
-export async function getAIToolTasks(documentId: string): Promise<AIToolTask[]> {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) throw new Error('User not authenticated');
+export async function getAIToolTasks() {
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error('User not authenticated');
 
   const { data, error } = await supabase
     .from('ai_tool_tasks')
     .select('*')
-    .eq('document_id', documentId)
-    .eq('user_id', userData.user.id)
-    .order('created_at', { ascending: false });
+    .eq('user_id', userData.user.id);
 
   if (error) throw error;
-  return data as AIToolTask[] || [];
+  return data;
 }
