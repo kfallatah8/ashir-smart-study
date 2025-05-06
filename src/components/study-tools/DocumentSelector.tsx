@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { getUserDocuments } from '@/lib/document-utils';
+import { getUserDocuments } from '@/lib/documents';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
 import { useLanguage } from '@/hooks/use-language';

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import {
   AIToolTask, 
   isMindMapResult, 
   isFlashcardsResult 
-} from '@/lib/document-utils';
+} from '@/lib/documents';
 
 interface AIToolResultsProps {
   tasks: AIToolTask[];

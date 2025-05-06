@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import UploadZone from '@/components/upload/UploadZone';
 import DocumentProgress from '@/components/documents/DocumentProgress';
-import { shareDocument } from '@/lib/document-utils';
+import { shareDocument } from '@/lib/documents';
 
 export default function Documents() {
   const [documents, setDocuments] = useState<any[]>([]);

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { createAIToolTask, getAIToolTasks, AIToolTask } from '@/lib/document-utils';
+import { createAIToolTask, getAIToolTasks, AIToolTask } from '@/lib/documents';
 import { supabase } from '@/integrations/supabase/client';
 
 export function useAITools(documentId: string) {
