@@ -1,6 +1,26 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+import type { Json } from '@/integrations/supabase/types';
+
+// Define specific types to avoid excessive type instantiation
+type DocumentShare = {
+  shared_by: string;
+  shared_with: string;
+};
+
+type SharedDocument = {
+  id: string;
+  title: string;
+  file_path: string;
+  file_type: string;
+  file_size: number;
+  document_text: string | null;
+  document_vector: unknown | null;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+  document_shares: DocumentShare[];
+};
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
   // Get the user ID from the email
@@ -31,14 +51,6 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
 export async function getSharedDocuments() {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
-
-  // Use explicit typing to avoid deep type instantiation
-  type SharedDocument = Database['public']['Tables']['documents']['Row'] & {
-    document_shares: {
-      shared_by: string;
-      shared_with: string;
-    }[];
-  };
 
   const { data, error } = await supabase
     .from('documents')
