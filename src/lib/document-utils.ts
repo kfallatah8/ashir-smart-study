@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
@@ -151,12 +150,14 @@ export interface MindMapNode {
   type: string;
 }
 
+export interface MindMapEdge {
+  source: string;
+  target: string;
+}
+
 export interface MindMapResult {
   nodes: MindMapNode[];
-  edges?: Array<{
-    source: string;
-    target: string;
-  }>;
+  edges?: MindMapEdge[];
 }
 
 export interface FlashcardItem {
@@ -164,30 +165,29 @@ export interface FlashcardItem {
   answer: string;
 }
 
-// Define the AIToolTask interface with a primitive type for result
+// Define the AIToolTask interface with a simple type that won't cause recursive type issues
 export interface AIToolTask {
   id: string;
   document_id: string;
   user_id: string;
   tool_type: string;
   status: string;
-  // Use a non-recursive type to avoid infinite type instantiation
-  result: any; // Using 'any' instead of 'unknown' to resolve the error
+  result: Record<string, any>; // Using Record<string, any> instead of recursive types
   created_at: string;
   updated_at: string;
 }
 
 // Helper functions to type-check results
-export function isMindMapResult(result: unknown): result is MindMapResult {
+export function isMindMapResult(result: any): result is MindMapResult {
   return (
     typeof result === 'object' && 
     result !== null && 
     'nodes' in result && 
-    Array.isArray((result as MindMapResult).nodes)
+    Array.isArray(result.nodes)
   );
 }
 
-export function isFlashcardsResult(result: unknown): result is FlashcardItem[] {
+export function isFlashcardsResult(result: any): result is FlashcardItem[] {
   return (
     Array.isArray(result) && 
     result.length > 0 && 
