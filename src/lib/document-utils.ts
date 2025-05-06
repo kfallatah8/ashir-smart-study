@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export async function uploadDocument(file: File, userId: string) {
@@ -144,16 +143,57 @@ export async function getDocumentById(documentId: string) {
   return data;
 }
 
-// Define the AIToolTask interface explicitly with simple types to avoid circular references
+// Define specific result type interfaces for different AI tools
+export interface MindMapNode {
+  id: string;
+  label: string;
+  type: string;
+}
+
+export interface MindMapResult {
+  nodes: MindMapNode[];
+  edges?: Array<{
+    source: string;
+    target: string;
+  }>;
+}
+
+export interface FlashcardItem {
+  question: string;
+  answer: string;
+}
+
+// Define the AIToolTask interface with more specific result types
 export interface AIToolTask {
   id: string;
   document_id: string;
   user_id: string;
   tool_type: string;
   status: string;
-  result: unknown; // Using 'unknown' type instead of 'any' to be more type-safe
+  result: unknown;
   created_at: string;
   updated_at: string;
+}
+
+// Helper functions to type-check results
+export function isMindMapResult(result: unknown): result is MindMapResult {
+  return (
+    typeof result === 'object' && 
+    result !== null && 
+    'nodes' in result && 
+    Array.isArray((result as MindMapResult).nodes)
+  );
+}
+
+export function isFlashcardsResult(result: unknown): result is FlashcardItem[] {
+  return (
+    Array.isArray(result) && 
+    result.length > 0 && 
+    typeof result[0] === 'object' && 
+    result[0] !== null &&
+    'question' in result[0] && 
+    'answer' in result[0]
+  );
 }
 
 // Create a new AI tool task

@@ -3,7 +3,11 @@ import React from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { AIToolTask } from '@/lib/document-utils';
+import { 
+  AIToolTask, 
+  isMindMapResult, 
+  isFlashcardsResult 
+} from '@/lib/document-utils';
 
 interface AIToolResultsProps {
   tasks: AIToolTask[];
@@ -34,6 +38,47 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
     );
   }
 
+  const renderResult = (task: AIToolTask) => {
+    if (task.status !== 'completed' || !task.result) return null;
+
+    if (toolType === 'mind_map' && isMindMapResult(task.result)) {
+      return (
+        <div className="text-sm">
+          <p className="font-medium mb-2">Mind Map Structure:</p>
+          <ul className="list-disc pl-5">
+            {task.result.nodes.map((node) => (
+              <li key={node.id}>
+                {node.label} ({node.type})
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+    
+    if (toolType === 'flashcards' && isFlashcardsResult(task.result)) {
+      return (
+        <div className="space-y-3">
+          {task.result.map((card, index) => (
+            <div key={index} className="border p-3 rounded bg-white">
+              <p className="font-medium">{card.question}</p>
+              <p className="text-gray-600 mt-1">{card.answer}</p>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Default rendering for other result types
+    return (
+      <pre className="whitespace-pre-wrap text-sm">
+        {typeof task.result === 'object' 
+          ? JSON.stringify(task.result, null, 2) 
+          : String(task.result)}
+      </pre>
+    );
+  };
+
   return (
     <div className="space-y-4">
       {filteredTasks.map((task) => (
@@ -63,37 +108,7 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
             
             {task.status === 'completed' && task.result && (
               <div className="mt-4 border rounded p-4 bg-gray-50">
-                {toolType === 'mind_map' && task.result.nodes && (
-                  <div className="text-sm">
-                    <p className="font-medium mb-2">Mind Map Structure:</p>
-                    <ul className="list-disc pl-5">
-                      {task.result.nodes.map((node: any) => (
-                        <li key={node.id}>
-                          {node.label} ({node.type})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {toolType === 'flashcards' && Array.isArray(task.result) && (
-                  <div className="space-y-3">
-                    {task.result.map((card: any, index: number) => (
-                      <div key={index} className="border p-3 rounded bg-white">
-                        <p className="font-medium">{card.question}</p>
-                        <p className="text-gray-600 mt-1">{card.answer}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {(!task.result.nodes && !Array.isArray(task.result)) && (
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {typeof task.result === 'object' 
-                      ? JSON.stringify(task.result, null, 2) 
-                      : task.result}
-                  </pre>
-                )}
+                {renderResult(task)}
               </div>
             )}
             

@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen, CheckCircle, Clock } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import DocumentSelector, { Document } from './DocumentSelector';
 import { useAITools } from '@/hooks/use-ai-tools';
 import { useToast } from "@/hooks/use-toast";
-import { AIToolTask } from '@/lib/document-utils';
+import AIToolResults from './AIToolResults';
 
 const MindMapTool = () => {
   const { t } = useLanguage();
@@ -39,67 +39,6 @@ const MindMapTool = () => {
     } catch (error) {
       console.error('Error generating mind map:', error);
     }
-  };
-
-  const renderTasksList = () => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      );
-    }
-
-    if (!tasks || tasks.length === 0) {
-      return (
-        <div className="text-center py-10">
-          <p className="text-gray-500">
-            {t('You have no saved mind maps yet')}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {tasks.map((task: AIToolTask) => (
-          <Card key={task.id} className="overflow-hidden">
-            <CardContent className="p-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Mind Map #{task.id.substring(0, 8)}</h3>
-                <div className="flex items-center">
-                  {task.status === 'completed' ? (
-                    <div className="flex items-center text-green-500">
-                      <CheckCircle className="h-4 w-4 mr-1" />
-                      <span className="text-xs">{t('Completed')}</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-amber-500">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span className="text-xs">{t('Processing')}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
-              {task.status === 'completed' && task.result && (
-                <div className="mt-4 border rounded p-4 bg-gray-50">
-                  <pre className="whitespace-pre-wrap text-sm">
-                    {typeof task.result === 'object' 
-                      ? JSON.stringify(task.result, null, 2) 
-                      : task.result}
-                  </pre>
-                </div>
-              )}
-              
-              <p className="text-xs text-gray-500 mt-2">
-                {new Date(task.created_at).toLocaleString()}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -169,7 +108,11 @@ const MindMapTool = () => {
               )}
             </TabsContent>
             <TabsContent value="saved">
-              {renderTasksList()}
+              <AIToolResults 
+                tasks={tasks} 
+                isLoading={isLoading} 
+                toolType="mind_map" 
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
