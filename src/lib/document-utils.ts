@@ -151,7 +151,7 @@ export interface AIToolTask {
   user_id: string;
   tool_type: string;
   status: string;
-  result: any;
+  result: any; // Using 'any' for the result to prevent circular references
   created_at: string;
   updated_at: string;
 }
@@ -176,7 +176,7 @@ export async function createAIToolTask(documentId: string, toolType: string) {
   return data as AIToolTask;
 }
 
-// Get AI tool tasks for a document with explicit return type
+// Get AI tool tasks for a document
 export async function getAIToolTasks(documentId: string): Promise<AIToolTask[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
