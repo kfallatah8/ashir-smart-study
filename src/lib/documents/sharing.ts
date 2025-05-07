@@ -47,7 +47,7 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
   if (shareError) throw shareError;
 }
 
-export async function getSharedDocuments() {
+export async function getSharedDocuments(): Promise<SharedDocument[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
