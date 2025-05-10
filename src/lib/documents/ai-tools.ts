@@ -5,8 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 export type MindMapNode = {
   id: string;
   label: string;
-  type?: string;  // Added type property
-  group?: string;
+  type?: string;
 };
 
 export type MindMapEdge = {
@@ -27,6 +26,11 @@ export type FlashcardItem = {
   answer: string;
 };
 
+export type FlashcardsResult = {
+  type: 'flashcards';
+  cards: FlashcardItem[];
+};
+
 // Define base AIToolTask type with non-recursive result type
 export type AIToolTask = {
   id: string;
@@ -36,7 +40,7 @@ export type AIToolTask = {
   created_at: string | null;
   updated_at: string | null;
   user_id: string;
-  result: Record<string, any> | null; // Use Record<string, any> to avoid recursive type instantiation
+  result: Record<string, any> | null;
 };
 
 // Type guards for runtime type checking
@@ -47,13 +51,13 @@ export function isMindMapResult(result: any): result is MindMapResult {
     Array.isArray(result.edges);
 }
 
-export function isFlashcardsResult(result: any): result is { type: 'flashcards', cards: FlashcardItem[] } {
+export function isFlashcardsResult(result: any): result is FlashcardsResult {
   return result && 
     result.type === 'flashcards' && 
     Array.isArray(result.cards);
 }
 
-export async function createAIToolTask(documentId: string, toolType: string) {
+export async function createAIToolTask(documentId: string, toolType: string): Promise<AIToolTask> {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('User not authenticated');
 
@@ -72,7 +76,7 @@ export async function createAIToolTask(documentId: string, toolType: string) {
   return data as AIToolTask;
 }
 
-export async function getAIToolTasks(documentId?: string) {
+export async function getAIToolTasks(documentId?: string): Promise<AIToolTask[]> {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error('User not authenticated');
 

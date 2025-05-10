@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { 
   AIToolTask, 
   isMindMapResult, 
@@ -18,8 +19,16 @@ interface AIToolResultsProps {
 
 const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
   const { t } = useLanguage();
+  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
   
   const filteredTasks = tasks.filter(task => task.tool_type === toolType);
+
+  const toggleTaskExpand = (taskId: string) => {
+    setExpandedTasks(prev => ({
+      ...prev,
+      [taskId]: !prev[taskId]
+    }));
+  };
 
   if (isLoading) {
     return (
@@ -39,43 +48,65 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
     );
   }
 
+  const renderMindMap = (nodes: any[], edges: any[]) => {
+    return (
+      <div className="border rounded p-3 bg-white">
+        <p className="font-medium mb-2">Mind Map Structure:</p>
+        <ul className="list-disc pl-5">
+          {nodes.map((node) => (
+            <li key={node.id} className="mb-1">
+              <span className="font-semibold">{node.label}</span>
+              {node.type && <span className="text-gray-500"> ({node.type})</span>}
+              {edges
+                .filter(edge => edge.from === node.id || edge.to === node.id)
+                .map((edge, i) => {
+                  const connectedNode = nodes.find(n => 
+                    (edge.from === node.id ? n.id === edge.to : n.id === edge.from)
+                  );
+                  return connectedNode ? (
+                    <div key={`${node.id}-${i}`} className="ml-4 text-sm text-gray-600">
+                      {edge.from === node.id ? '→ ' : '← '}
+                      {connectedNode.label}
+                      {edge.label && ` (${edge.label})`}
+                    </div>
+                  ) : null;
+                })
+              }
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+  
+  const renderFlashcards = (cards: FlashcardItem[]) => {
+    return (
+      <div className="space-y-3">
+        {cards.map((card, index) => (
+          <div key={card.id || index} className="border p-3 rounded bg-white">
+            <p className="font-medium">{card.question}</p>
+            <p className="text-gray-600 mt-1">{card.answer}</p>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   const renderResult = (task: AIToolTask) => {
     if (task.status !== 'completed' || !task.result) return null;
 
-    if (toolType === 'mind_map' && isMindMapResult(task.result)) {
-      return (
-        <div className="text-sm">
-          <p className="font-medium mb-2">Mind Map Structure:</p>
-          <ul className="list-disc pl-5">
-            {task.result.nodes.map((node) => (
-              <li key={node.id}>
-                {node.label} {node.type && `(${node.type})`}
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
+    if (isMindMapResult(task.result)) {
+      return renderMindMap(task.result.nodes, task.result.edges);
     }
     
-    if (toolType === 'flashcards' && isFlashcardsResult(task.result)) {
-      return (
-        <div className="space-y-3">
-          {task.result.cards.map((card: FlashcardItem, index: number) => (
-            <div key={index} className="border p-3 rounded bg-white">
-              <p className="font-medium">{card.question}</p>
-              <p className="text-gray-600 mt-1">{card.answer}</p>
-            </div>
-          ))}
-        </div>
-      );
+    if (isFlashcardsResult(task.result)) {
+      return renderFlashcards(task.result.cards);
     }
 
     // Default rendering for other result types
     return (
-      <pre className="whitespace-pre-wrap text-sm">
-        {typeof task.result === 'object' 
-          ? JSON.stringify(task.result, null, 2) 
-          : String(task.result)}
+      <pre className="whitespace-pre-wrap text-sm border p-3 rounded bg-white overflow-x-auto">
+        {JSON.stringify(task.result, null, 2)}
       </pre>
     );
   };
@@ -108,9 +139,23 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
             </div>
             
             {task.status === 'completed' && task.result && (
-              <div className="mt-4 border rounded p-4 bg-gray-50">
-                {renderResult(task)}
-              </div>
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => toggleTaskExpand(task.id)}
+                  className="w-full mt-3 flex justify-between items-center border"
+                >
+                  <span>{expandedTasks[task.id] ? t('Hide Results') : t('Show Results')}</span>
+                  {expandedTasks[task.id] ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </Button>
+                
+                {expandedTasks[task.id] && (
+                  <div className="mt-4 border rounded p-4 bg-gray-50">
+                    {renderResult(task)}
+                  </div>
+                )}
+              </>
             )}
             
             <p className="text-xs text-gray-500 mt-2">

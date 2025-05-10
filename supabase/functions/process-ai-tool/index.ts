@@ -84,6 +84,7 @@ serve(async (req) => {
         switch (task.tool_type) {
           case 'mind_map':
             result = {
+              type: 'mindmap',
               nodes: [
                 { id: '1', label: document.title, type: 'root' },
                 { id: '2', label: 'Key Concept 1', type: 'concept' },
@@ -92,22 +93,25 @@ serve(async (req) => {
                 { id: '5', label: 'Sub-concept 2.1', type: 'subconcept' },
               ],
               edges: [
-                { source: '1', target: '2' },
-                { source: '1', target: '3' },
-                { source: '2', target: '4' },
-                { source: '3', target: '5' },
+                { from: '1', to: '2' },
+                { from: '1', to: '3' },
+                { from: '2', to: '4' },
+                { from: '3', to: '5' },
               ]
             }
             break
           case 'flashcards':
-            result = [
-              { question: 'Question 1?', answer: 'Answer 1' },
-              { question: 'Question 2?', answer: 'Answer 2' },
-              { question: 'Question 3?', answer: 'Answer 3' },
-            ]
+            result = {
+              type: 'flashcards',
+              cards: [
+                { id: '1', question: 'Question 1?', answer: 'Answer 1' },
+                { id: '2', question: 'Question 2?', answer: 'Answer 2' },
+                { id: '3', question: 'Question 3?', answer: 'Answer 3' },
+              ]
+            }
             break
           default:
-            result = { message: `${task.tool_type} processed successfully` }
+            result = { type: task.tool_type, message: `${task.tool_type} processed successfully` }
         }
         
         // Update the task with the result
