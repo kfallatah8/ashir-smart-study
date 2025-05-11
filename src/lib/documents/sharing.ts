@@ -1,25 +1,26 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Define specific types to avoid excessive type instantiation
-type DocumentShare = {
+// Define primitive types without circular references
+export type DocumentShare = {
   shared_by: string;
   shared_with: string;
 };
 
-// Use a more explicit type definition that doesn't cause circular references
-type SharedDocument = {
+// Use a completely flat structure with no nested types
+export type SharedDocument = {
   id: string;
   title: string;
   file_path: string;
   file_type: string;
   file_size: number;
   document_text: string | null;
-  document_vector: unknown | null;
+  document_vector: any | null; // Using 'any' to avoid complex types
   created_at: string;
   updated_at: string;
   user_id: string;
-  document_shares: DocumentShare[];
+  shared_by?: string;
+  shared_with?: string;
 };
 
 export async function shareDocument(documentId: string, sharedWithEmail: string) {
@@ -48,23 +49,37 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
   if (shareError) throw shareError;
 }
 
-// Add explicit return type annotation to help TypeScript
+// Simple function signature with explicit return type
 export async function getSharedDocuments(): Promise<SharedDocument[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
+  // Use a simpler query approach to avoid complex joins
   const { data, error } = await supabase
-    .from('documents')
-    .select(`
-      *,
-      document_shares!inner (
-        shared_by,
-        shared_with
-      )
-    `)
-    .eq('document_shares.shared_with', userData.user.id);
+    .rpc('get_shared_documents_for_user', { user_id: userData.user.id });
 
-  if (error) throw error;
-  // Use type assertion to avoid complex type inference
-  return (data || []) as SharedDocument[];
+  if (error) {
+    // Fallback to simpler query if RPC function doesn't exist
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('documents')
+      .select(`
+        *,
+        document_shares!inner (
+          shared_by,
+          shared_with
+        )
+      `)
+      .eq('document_shares.shared_with', userData.user.id);
+
+    if (fallbackError) throw fallbackError;
+    
+    // Transform the data to match our simplified type
+    return (fallbackData || []).map(doc => ({
+      ...doc,
+      shared_by: doc.document_shares?.[0]?.shared_by || null,
+      shared_with: doc.document_shares?.[0]?.shared_with || null
+    })) as SharedDocument[];
+  }
+
+  return data as SharedDocument[];
 }
