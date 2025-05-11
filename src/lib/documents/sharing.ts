@@ -15,7 +15,7 @@ export type SharedDocument = {
   file_type: string;
   file_size: number;
   document_text: string | null;
-  document_vector: any | null; // Using 'any' to avoid complex types
+  document_vector: unknown | null; // Using unknown instead of any for better type safety
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -54,32 +54,40 @@ export async function getSharedDocuments(): Promise<SharedDocument[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
 
-  // Use a simpler query approach to avoid complex joins
-  const { data, error } = await supabase
-    .rpc('get_shared_documents_for_user', { user_id: userData.user.id });
+  // Try a direct query approach first to avoid complex joins and type issues
+  const { data: directData, error: directError } = await supabase
+    .from('document_shares')
+    .select(`
+      document_id,
+      shared_by,
+      shared_with
+    `)
+    .eq('shared_with', userData.user.id);
 
-  if (error) {
-    // Fallback to simpler query if RPC function doesn't exist
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from('documents')
-      .select(`
-        *,
-        document_shares!inner (
-          shared_by,
-          shared_with
-        )
-      `)
-      .eq('document_shares.shared_with', userData.user.id);
-
-    if (fallbackError) throw fallbackError;
-    
-    // Transform the data to match our simplified type
-    return (fallbackData || []).map(doc => ({
-      ...doc,
-      shared_by: doc.document_shares?.[0]?.shared_by || null,
-      shared_with: doc.document_shares?.[0]?.shared_with || null
-    })) as SharedDocument[];
+  if (directError) throw directError;
+  
+  // If we have no shared documents, return empty array
+  if (!directData || directData.length === 0) {
+    return [];
   }
-
-  return data as SharedDocument[];
+  
+  // Get the actual documents using the document IDs
+  const documentIds = directData.map(share => share.document_id);
+  
+  const { data: documents, error: docsError } = await supabase
+    .from('documents')
+    .select('*')
+    .in('id', documentIds);
+    
+  if (docsError) throw docsError;
+  
+  // Combine the document data with sharing information
+  return (documents || []).map(doc => {
+    const shareInfo = directData.find(share => share.document_id === doc.id);
+    return {
+      ...doc,
+      shared_by: shareInfo?.shared_by || null,
+      shared_with: shareInfo?.shared_with || null
+    } as SharedDocument;
+  });
 }
