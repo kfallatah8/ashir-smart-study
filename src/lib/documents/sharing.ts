@@ -7,6 +7,7 @@ type DocumentShare = {
   shared_with: string;
 };
 
+// Use a more explicit type definition that doesn't cause circular references
 type SharedDocument = {
   id: string;
   title: string;
@@ -47,6 +48,7 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
   if (shareError) throw shareError;
 }
 
+// Add explicit return type annotation to help TypeScript
 export async function getSharedDocuments(): Promise<SharedDocument[]> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) throw new Error('User not authenticated');
@@ -63,5 +65,6 @@ export async function getSharedDocuments(): Promise<SharedDocument[]> {
     .eq('document_shares.shared_with', userData.user.id);
 
   if (error) throw error;
+  // Use type assertion to avoid complex type inference
   return (data || []) as SharedDocument[];
 }
