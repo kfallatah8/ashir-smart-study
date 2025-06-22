@@ -1,32 +1,26 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 
-// Simple type definitions to avoid circular references
-export type SharedDocument = {
-  id: string;
-  title: string;
-  file_path: string;
-  file_type: string;
-  file_size: number;
-  document_text: string | null;
-  document_vector: any;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
+// Use Supabase-generated types to avoid circular references
+type DocumentRow = Database['public']['Tables']['documents']['Row'];
+
+// Extended document type with sharing metadata
+export type SharedDocument = DocumentRow & {
   shared_by?: string;
   shared_with?: string;
 };
 
-export async function shareDocument(documentId: string, sharedWithEmail: string) {
-  // Get the user ID from the email
+export async function shareDocument(documentId: string, sharedWithName: string) {
+  // Get the user ID from the full name
   const { data, error: userError } = await supabase
     .from('profiles')
     .select('id')
-    .eq('email', sharedWithEmail)
+    .eq('full_name', sharedWithName)
     .maybeSingle();
     
   if (userError) throw userError;
-  if (!data) throw new Error('User not found');
+  if (!data) throw new Error('User not found with that name. Please use the exact full name from their profile.');
   
   // Create the share record
   const { data: authData, error: authError } = await supabase.auth.getUser();
@@ -80,6 +74,6 @@ export async function getSharedDocuments(): Promise<SharedDocument[]> {
       ...doc,
       shared_by: shareInfo?.shared_by,
       shared_with: shareInfo?.shared_with
-    };
+    } as SharedDocument;
   });
 }
