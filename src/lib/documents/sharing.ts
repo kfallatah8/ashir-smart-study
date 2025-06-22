@@ -1,13 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// Define primitive types without circular references
-export type DocumentShare = {
-  shared_by: string;
-  shared_with: string;
-};
-
-// Use a completely flat structure with no nested types
+// Simple type definitions to avoid circular references
 export type SharedDocument = {
   id: string;
   title: string;
@@ -15,7 +9,7 @@ export type SharedDocument = {
   file_type: string;
   file_size: number;
   document_text: string | null;
-  document_vector: unknown | null; // Using unknown instead of any for better type safety
+  document_vector: any;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -49,29 +43,28 @@ export async function shareDocument(documentId: string, sharedWithEmail: string)
   if (shareError) throw shareError;
 }
 
-// Simple function signature with explicit return type - REMOVED AUTH FOR TESTING
 export async function getSharedDocuments(): Promise<SharedDocument[]> {
-  // Remove auth check for testing
-  console.log('Testing getSharedDocuments without auth');
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error('User not authenticated');
 
-  // Get all document shares for testing
-  const { data: directData, error: directError } = await supabase
+  // Get document shares for the current user
+  const { data: shareData, error: shareError } = await supabase
     .from('document_shares')
     .select(`
       document_id,
       shared_by,
       shared_with
-    `);
+    `)
+    .eq('shared_with', userData.user.id);
 
-  if (directError) throw directError;
+  if (shareError) throw shareError;
   
-  // If we have no shared documents, return empty array
-  if (!directData || directData.length === 0) {
+  if (!shareData || shareData.length === 0) {
     return [];
   }
   
-  // Get the actual documents using the document IDs
-  const documentIds = directData.map(share => share.document_id);
+  // Get the actual documents
+  const documentIds = shareData.map(share => share.document_id);
   
   const { data: documents, error: docsError } = await supabase
     .from('documents')
@@ -80,13 +73,13 @@ export async function getSharedDocuments(): Promise<SharedDocument[]> {
     
   if (docsError) throw docsError;
   
-  // Combine the document data with sharing information
+  // Combine document data with sharing info
   return (documents || []).map(doc => {
-    const shareInfo = directData.find(share => share.document_id === doc.id);
+    const shareInfo = shareData.find(share => share.document_id === doc.id);
     return {
       ...doc,
-      shared_by: shareInfo?.shared_by || null,
-      shared_with: shareInfo?.shared_with || null
-    } as SharedDocument;
+      shared_by: shareInfo?.shared_by,
+      shared_with: shareInfo?.shared_with
+    };
   });
 }
