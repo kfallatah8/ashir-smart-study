@@ -33,3 +33,9 @@ export {
   type MindMapResult,
   type FlashcardItem
 } from './ai-tools';
+
+// Task cleanup utilities
+export {
+  cleanupStuckTasks,
+  startTaskCleanup
+} from './task-cleanup';

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./hooks/use-language";
 import { useState, useEffect } from "react";
 import { supabase } from "./integrations/supabase/client";
+import { startTaskCleanup } from "./lib/documents/task-cleanup";
 import Index from "./pages/Index";
 import StudyZone from "./pages/StudyZone";
 import Documents from "./pages/Documents";
@@ -59,29 +60,39 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return session ? children : <Navigate to="/auth" />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <LanguageProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={<PrivateRoute><Index /></PrivateRoute>} />
-            <Route path="/study" element={<PrivateRoute><StudyZone /></PrivateRoute>} />
-            <Route path="/study/:tool" element={<PrivateRoute><StudyZone /></PrivateRoute>} />
-            <Route path="/documents" element={<PrivateRoute><Documents /></PrivateRoute>} />
-            <Route path="/achievements" element={<PrivateRoute><Achievements /></PrivateRoute>} />
-            <Route path="/leaderboards" element={<PrivateRoute><Leaderboards /></PrivateRoute>} />
-            <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-            <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </LanguageProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  useEffect(() => {
+    // Start the task cleanup process
+    const cleanup = startTaskCleanup();
+    
+    // Cleanup when app unmounts
+    return cleanup;
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <LanguageProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/" element={<PrivateRoute><Index /></PrivateRoute>} />
+              <Route path="/study" element={<PrivateRoute><StudyZone /></PrivateRoute>} />
+              <Route path="/study/:tool" element={<PrivateRoute><StudyZone /></PrivateRoute>} />
+              <Route path="/documents" element={<PrivateRoute><Documents /></PrivateRoute>} />
+              <Route path="/achievements" element={<PrivateRoute><Achievements /></PrivateRoute>} />
+              <Route path="/leaderboards" element={<PrivateRoute><Leaderboards /></PrivateRoute>} />
+              <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+              <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </LanguageProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
