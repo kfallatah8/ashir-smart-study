@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { useLanguage } from '@/hooks/use-language';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle, Clock, AlertTriangle, ChevronDown, ChevronUp, Eye, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   AIToolTask, 
@@ -10,6 +11,7 @@ import {
   isFlashcardsResult,
   FlashcardItem
 } from '@/lib/documents';
+import MindMapViewer from './MindMapViewer';
 
 interface AIToolResultsProps {
   tasks: AIToolTask[];
@@ -48,34 +50,53 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
     );
   }
 
-  const renderMindMap = (nodes: any[], edges: any[]) => {
+  const renderMindMapTabs = (nodes: any[], edges: any[]) => {
     return (
-      <div className="border rounded p-3 bg-white">
-        <p className="font-medium mb-2">Mind Map Structure:</p>
-        <ul className="list-disc pl-5">
-          {nodes.map((node) => (
-            <li key={node.id} className="mb-1">
-              <span className="font-semibold">{node.label}</span>
-              {node.type && <span className="text-gray-500"> ({node.type})</span>}
-              {edges
-                .filter(edge => edge.from === node.id || edge.to === node.id)
-                .map((edge, i) => {
-                  const connectedNode = nodes.find(n => 
-                    (edge.from === node.id ? n.id === edge.to : n.id === edge.from)
-                  );
-                  return connectedNode ? (
-                    <div key={`${node.id}-${i}`} className="ml-4 text-sm text-gray-600">
-                      {edge.from === node.id ? '→ ' : '← '}
-                      {connectedNode.label}
-                      {edge.label && ` (${edge.label})`}
-                    </div>
-                  ) : null;
-                })
-              }
-            </li>
-          ))}
-        </ul>
-      </div>
+      <Tabs defaultValue="visual" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="visual" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            {t('Visual View')}
+          </TabsTrigger>
+          <TabsTrigger value="text" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            {t('Text View')}
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="visual" className="mt-4">
+          <MindMapViewer nodes={nodes} edges={edges} />
+        </TabsContent>
+        
+        <TabsContent value="text" className="mt-4">
+          <div className="border rounded p-3 bg-white">
+            <p className="font-medium mb-2">Mind Map Structure:</p>
+            <ul className="list-disc pl-5">
+              {nodes.map((node) => (
+                <li key={node.id} className="mb-1">
+                  <span className="font-semibold">{node.label}</span>
+                  {node.type && <span className="text-gray-500"> ({node.type})</span>}
+                  {edges
+                    .filter(edge => edge.from === node.id || edge.to === node.id)
+                    .map((edge, i) => {
+                      const connectedNode = nodes.find(n => 
+                        (edge.from === node.id ? n.id === edge.to : n.id === edge.from)
+                      );
+                      return connectedNode ? (
+                        <div key={`${node.id}-${i}`} className="ml-4 text-sm text-gray-600">
+                          {edge.from === node.id ? '→ ' : '← '}
+                          {connectedNode.label}
+                          {edge.label && ` (${edge.label})`}
+                        </div>
+                      ) : null;
+                    })
+                  }
+                </li>
+              ))}
+            </ul>
+          </div>
+        </TabsContent>
+      </Tabs>
     );
   };
   
@@ -96,7 +117,7 @@ const AIToolResults = ({ tasks, isLoading, toolType }: AIToolResultsProps) => {
     if (task.status !== 'completed' || !task.result) return null;
 
     if (isMindMapResult(task.result)) {
-      return renderMindMap(task.result.nodes, task.result.edges);
+      return renderMindMapTabs(task.result.nodes, task.result.edges);
     }
     
     if (isFlashcardsResult(task.result)) {
