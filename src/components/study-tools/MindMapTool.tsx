@@ -31,7 +31,7 @@ const MindMapTool = () => {
     }
 
     try {
-      await generateTool('mindmap');
+      await generateTool('mind_map');
       toast({
         title: t('Success'),
         description: t('Your mind map is being generated'),
@@ -111,7 +111,7 @@ const MindMapTool = () => {
               <AIToolResults 
                 tasks={tasks} 
                 isLoading={isLoading} 
-                toolType="mindmap" 
+                toolType="mind_map" 
               />
             </TabsContent>
           </Tabs>
