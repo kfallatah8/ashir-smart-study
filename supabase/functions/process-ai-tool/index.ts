@@ -86,7 +86,7 @@ serve(async (req) => {
 
     // Generate AI content based on tool type
     switch (task.tool_type) {
-      case 'mindmap':
+      case 'mind_map':
         prompt = `Create a mind map for the document "${documentTitle}". 
         Based on this content: ${documentText.substring(0, 3000)}
         
