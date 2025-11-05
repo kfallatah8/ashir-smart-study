@@ -10,15 +10,24 @@ export async function uploadDocument(file: File, userId: string) {
 
   if (uploadError) throw uploadError;
 
-  const { error: dbError } = await supabase.from('documents').insert({
+  const { data: newDoc, error: dbError } = await supabase.from('documents').insert({
     title: file.name,
     file_path: filePath,
     file_type: file.type,
     file_size: file.size,
     user_id: userId
-  });
+  }).select().single();
 
   if (dbError) throw dbError;
+
+  // Trigger text extraction in background
+  if (newDoc) {
+    supabase.functions.invoke('extract-document-text', {
+      body: { documentId: newDoc.id }
+    }).then(({ error }) => {
+      if (error) console.error('Text extraction failed:', error);
+    });
+  }
 
   return filePath;
 }

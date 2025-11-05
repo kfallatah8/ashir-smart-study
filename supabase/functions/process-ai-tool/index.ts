@@ -130,6 +130,63 @@ serve(async (req) => {
         }`;
         break;
 
+      case 'presentations':
+        prompt = `Create a presentation outline for the document "${documentTitle}".
+        Based on this content: ${documentText.substring(0, 3000)}
+        
+        Return a JSON object with this exact structure:
+        {
+          "type": "presentations",
+          "slides": [
+            {
+              "id": "1",
+              "title": "Introduction",
+              "content": "Slide content here...",
+              "notes": "Speaker notes..."
+            }
+          ]
+        }`;
+        break;
+
+      case 'qa_bot':
+        prompt = `Create a Q&A knowledge base for the document "${documentTitle}".
+        Based on this content: ${documentText.substring(0, 3000)}
+        
+        Return a JSON object with this exact structure:
+        {
+          "type": "qa_bot",
+          "qa_pairs": [
+            {
+              "id": "1",
+              "question": "Sample question?",
+              "answer": "Detailed answer..."
+            }
+          ]
+        }`;
+        break;
+
+      case 'video':
+        prompt = `Create a video script outline for the document "${documentTitle}".
+        Based on this content: ${documentText.substring(0, 3000)}
+        
+        Return a JSON object with this exact structure:
+        {
+          "type": "video",
+          "script": {
+            "title": "Video title",
+            "duration": "5 minutes",
+            "scenes": [
+              {
+                "id": "1",
+                "timestamp": "0:00",
+                "description": "Scene description",
+                "narration": "What to say..."
+              }
+            ]
+          }
+        }`;
+        break;
+
       default:
         throw new Error(`Unknown tool type: ${task.tool_type}`);
     }

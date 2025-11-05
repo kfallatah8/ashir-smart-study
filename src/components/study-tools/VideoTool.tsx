@@ -1,54 +1,91 @@
-
-import React from 'react';
-import { useLanguage } from '@/hooks/use-language';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Video, Loader2 } from 'lucide-react';
+import { useLanguage } from '@/hooks/use-language';
+import DocumentSelector, { Document } from './DocumentSelector';
+import { useToast } from '@/hooks/use-toast';
+import { useAITools } from '@/hooks/use-ai-tools';
 
-const VideoTool = () => {
+export default function VideoTool() {
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const { isProcessing, generateTool, tasks } = useAITools(selectedDocument?.id || '');
+  
+  const completedTask = tasks.find(
+    task => task.tool_type === 'video' && task.status === 'completed'
+  );
+  const videoScript = completedTask?.result?.script;
+
+  const handleGenerate = async () => {
+    if (!selectedDocument) {
+      toast({
+        title: t('No Document Selected'),
+        description: t('Please select a document first'),
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    await generateTool('video');
+  };
 
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <span className="text-2xl">🎬</span>
-            {t('Video Explainer')}
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Video className="mr-2 h-5 w-5" />
+            {t('Generate Video Script')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="create" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="create">{t('Create Video')}</TabsTrigger>
-              <TabsTrigger value="saved">{t('My Videos')}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="create" className="space-y-4 mt-4">
-              <div className="text-center py-10">
-                <BookOpen className="h-12 w-12 mx-auto text-primary mb-4" />
-                <h3 className="text-lg font-medium mb-2">{t('Select a Document')}</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  {t('Choose a document to generate a video explanation from its content')}
+        <CardContent className="space-y-4">
+          <DocumentSelector
+            onSelect={setSelectedDocument}
+            selectedDocumentId={selectedDocument?.id}
+          />
+          
+          <Button 
+            onClick={handleGenerate}
+            className="w-full"
+            disabled={!selectedDocument || isProcessing}
+          >
+            {isProcessing ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Video className="mr-2 h-4 w-4" />
+            )}
+            {isProcessing ? t('Generating...') : t('Generate Video Script')}
+          </Button>
+
+          {videoScript && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle>{videoScript.title}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {t('Duration:')} {videoScript.duration}
                 </p>
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-                  <p className="text-red-700 text-sm">
-                    {t('Please select a document from your library or upload a new one to create a video explanation')}
-                  </p>
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="saved">
-              <div className="text-center py-10">
-                <p className="text-gray-500">
-                  {t('You have no saved videos yet')}
-                </p>
-              </div>
-            </TabsContent>
-          </Tabs>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {videoScript.scenes?.map((scene: any) => (
+                  <div key={scene.id} className="border-l-4 border-primary pl-4 py-2">
+                    <div className="flex items-start justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {scene.timestamp}
+                      </span>
+                    </div>
+                    <h4 className="font-medium mt-1">{scene.description}</h4>
+                    <p className="text-sm mt-2 italic text-muted-foreground">
+                      "{scene.narration}"
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-};
-
-export default VideoTool;
+}
